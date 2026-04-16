@@ -26,8 +26,8 @@ const tiles = [
     title: "Multi-gen gatherings",
     copy: "Villas with room to spread out, shared meals that feel special, and logistics that honor every generation.",
     image:
-      "https://images.unsplash.com/photo-1600596542815-ffad4b1530a9?auto=format&fit=crop&w=1200&q=80",
-    alt: "Modern home exterior at dusk with warm interior lights",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+    alt: "Spacious modern villa with pool at golden hour, ideal for extended family stays",
   },
 ] as const;
 
