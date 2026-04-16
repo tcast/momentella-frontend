@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AuthNav } from "@/components/auth/AuthNav";
 
 const nav = [
   { href: "#approach", label: "Approach" },
@@ -32,12 +33,15 @@ export function SiteHeader() {
               </Link>
             ))}
           </nav>
-          <Link
-            href="#contact"
-            className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-canvas transition hover:bg-accent-deep sm:px-5"
-          >
-            Plan a trip
-          </Link>
+          <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+            <AuthNav />
+            <Link
+              href="#contact"
+              className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-canvas transition hover:bg-accent-deep sm:px-5"
+            >
+              Plan a trip
+            </Link>
+          </div>
         </div>
         <nav
           className="-mx-5 flex gap-6 overflow-x-auto border-t border-line/60 px-5 pb-3 pt-2 text-xs font-semibold uppercase tracking-[0.16em] text-ink-muted md:hidden"
