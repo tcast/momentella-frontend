@@ -29,6 +29,20 @@ export default function AdminLayout({
             Security &amp; 2FA
           </Link>
         </div>
+        <nav className="mb-10 flex flex-wrap gap-6 border-b border-line pb-4 text-sm font-semibold text-ink-muted">
+          <Link className="hover:text-ink" href="/admin">
+            Overview
+          </Link>
+          <Link className="hover:text-ink" href="/admin/users">
+            Users
+          </Link>
+          <Link className="hover:text-ink" href="/admin/intake">
+            Trip intakes
+          </Link>
+          <Link className="hover:text-ink" href="/admin/intake/submissions">
+            Submissions
+          </Link>
+        </nav>
         {children}
       </main>
     </>

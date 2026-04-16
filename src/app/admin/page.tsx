@@ -7,6 +7,7 @@ type Overview = {
   users: number;
   trips: number;
   bookingRequests: number;
+  intakeSubmissions: number;
 };
 
 type BookingRequest = {
@@ -43,11 +44,12 @@ export default async function AdminPage() {
     <div className="space-y-12">
       <section>
         <h2 className="font-display text-xl font-semibold text-ink">Overview</h2>
-        <dl className="mt-6 grid gap-4 sm:grid-cols-3">
+        <dl className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
             ["Users", overview.users],
             ["Trips", overview.trips],
             ["Booking requests", overview.bookingRequests],
+            ["Intake submissions", overview.intakeSubmissions ?? 0],
           ].map(([label, n]) => (
             <div
               key={String(label)}
