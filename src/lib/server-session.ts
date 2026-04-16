@@ -23,20 +23,27 @@ export async function getAppOrigin(): Promise<string> {
 }
 
 export async function getServerSession(): Promise<ServerSession | null> {
-  const origin = await getAppOrigin();
   const store = await cookies();
   const cookie = store.getAll().map((c) => `${c.name}=${c.value}`).join("; ");
-  const res = await fetch(`${origin}/api/auth/get-session`, {
-    headers: { cookie },
-    cache: "no-store",
-  });
-  if (!res.ok) return null;
-  const data: unknown = await res.json();
-  if (!data || typeof data !== "object") return null;
-  const o = data as Record<string, unknown>;
-  if (!o.user || typeof o.user !== "object") return null;
-  return {
-    user: o.user as SessionUser,
-    session: (o.session as Record<string, unknown>) ?? {},
-  };
+  const upstream = process.env.MOMENTELLA_API_URL?.replace(/\/$/, "");
+  const url = upstream
+    ? `${upstream}/api/auth/get-session`
+    : `${await getAppOrigin()}/api/auth/get-session`;
+  try {
+    const res = await fetch(url, {
+      headers: { cookie },
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const data: unknown = await res.json();
+    if (!data || typeof data !== "object") return null;
+    const o = data as Record<string, unknown>;
+    if (!o.user || typeof o.user !== "object") return null;
+    return {
+      user: o.user as SessionUser,
+      session: (o.session as Record<string, unknown>) ?? {},
+    };
+  } catch {
+    return null;
+  }
 }

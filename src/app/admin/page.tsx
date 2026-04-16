@@ -37,7 +37,7 @@ export default async function AdminPage() {
     );
   }
 
-  const { bookingRequests } = bookingRes;
+  const bookingRequests = bookingRes.bookingRequests ?? [];
 
   return (
     <div className="space-y-12">

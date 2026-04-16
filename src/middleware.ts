@@ -2,17 +2,24 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 async function readSession(request: NextRequest) {
-  const url = new URL("/api/auth/get-session", request.url);
-  const res = await fetch(url, {
-    headers: { cookie: request.headers.get("cookie") ?? "" },
-    cache: "no-store",
-  });
-  if (!res.ok) return null;
-  const data: unknown = await res.json();
-  if (!data || typeof data !== "object") return null;
-  const o = data as Record<string, unknown>;
-  if (!o.user || typeof o.user !== "object") return null;
-  return o.user as { role?: string | null };
+  try {
+    const apiBase =
+      process.env.MOMENTELLA_API_URL?.replace(/\/$/, "") ??
+      request.nextUrl.origin;
+    const url = new URL("/api/auth/get-session", apiBase);
+    const res = await fetch(url, {
+      headers: { cookie: request.headers.get("cookie") ?? "" },
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const data: unknown = await res.json();
+    if (!data || typeof data !== "object") return null;
+    const o = data as Record<string, unknown>;
+    if (!o.user || typeof o.user !== "object") return null;
+    return o.user as { role?: string | null };
+  } catch {
+    return null;
+  }
 }
 
 export async function middleware(request: NextRequest) {
@@ -44,5 +51,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*"],
+  matcher: ["/dashboard", "/dashboard/:path*", "/admin", "/admin/:path*"],
 };

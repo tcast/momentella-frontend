@@ -41,8 +41,8 @@ export default async function DashboardPage() {
     );
   }
 
-  const { trips } = tripsRes;
-  const { bookingRequests } = requestsRes;
+  const trips = tripsRes.trips ?? [];
+  const bookingRequests = requestsRes.bookingRequests ?? [];
 
   return (
     <div className="grid gap-12 lg:grid-cols-2">
