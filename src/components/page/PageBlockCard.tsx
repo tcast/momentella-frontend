@@ -1,6 +1,7 @@
 "use client";
 
 import type { HTMLAttributes } from "react";
+import { IntakeFormSelect } from "@/components/page/IntakeFormSelect";
 import {
   BLOCK_LABELS,
   type CtaLink,
@@ -447,6 +448,31 @@ function BlockEditor({
             <option value="large">Large</option>
           </select>
         </label>
+      );
+
+    case "intake_form":
+      return (
+        <div className="space-y-4">
+          <IntakeFormSelect
+            value={block.slug}
+            onChange={(slug) => onPatch({ slug })}
+          />
+          <TextInput
+            label="Eyebrow (optional)"
+            value={block.eyebrow ?? ""}
+            onChange={(v) => onPatch({ eyebrow: v || undefined })}
+          />
+          <TextInput
+            label="Section title (optional)"
+            value={block.title ?? ""}
+            onChange={(v) => onPatch({ title: v || undefined })}
+          />
+          <TextareaInput
+            label="Intro paragraph (optional)"
+            value={block.body ?? ""}
+            onChange={(v) => onPatch({ body: v || undefined })}
+          />
+        </div>
       );
 
     default: {

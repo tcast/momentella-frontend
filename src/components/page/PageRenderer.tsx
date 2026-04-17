@@ -1,11 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
+import { IntakeFormBlockView } from "@/components/page/IntakeFormBlockView";
 import type {
   CtaSplitBlock,
   EditorialIntroBlock,
   FeatureTilesBlock,
   HeroBlock,
   ImageBlock,
+  IntakeFormBlock,
   PageBlock,
   PageSchema,
   ProcessStepsBlock,
@@ -44,6 +46,8 @@ export function BlockView({ block }: { block: PageBlock }) {
       return <ImageView block={block} />;
     case "spacer":
       return <SpacerView block={block} />;
+    case "intake_form":
+      return <IntakeFormView block={block} />;
     default: {
       const _ex: never = block;
       return _ex;
@@ -386,4 +390,31 @@ function SpacerView({ block }: { block: SpacerBlock }) {
         ? "h-24 sm:h-32"
         : "h-14 sm:h-20";
   return <div className={`${h} bg-canvas`} aria-hidden />;
+}
+
+function IntakeFormView({ block }: { block: IntakeFormBlock }) {
+  return (
+    <section id={block.anchor} className="bg-canvas py-16 sm:py-20">
+      <div className="mx-auto max-w-3xl px-5 sm:px-8">
+        {block.eyebrow ? (
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sage">
+            {block.eyebrow}
+          </p>
+        ) : null}
+        {block.title ? (
+          <h2 className="mt-3 font-display text-3xl font-medium text-ink sm:text-4xl">
+            {block.title}
+          </h2>
+        ) : null}
+        {block.body ? (
+          <p className="mt-4 text-base leading-relaxed text-ink-muted sm:text-lg">
+            {block.body}
+          </p>
+        ) : null}
+        <div className="mt-8 rounded-3xl border border-line bg-white/60 p-6 shadow-sm sm:p-10">
+          <IntakeFormBlockView slug={block.slug} />
+        </div>
+      </div>
+    </section>
+  );
 }

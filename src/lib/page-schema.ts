@@ -11,7 +11,8 @@ export type PageBlockType =
   | "cta_split"
   | "rich_text"
   | "image"
-  | "spacer";
+  | "spacer"
+  | "intake_form";
 
 export interface CtaLink {
   label: string;
@@ -108,6 +109,14 @@ export interface SpacerBlock extends Base {
   size: "small" | "medium" | "large";
 }
 
+export interface IntakeFormBlock extends Base {
+  type: "intake_form";
+  slug: string;
+  eyebrow?: string;
+  title?: string;
+  body?: string;
+}
+
 export type PageBlock =
   | HeroBlock
   | EditorialIntroBlock
@@ -117,7 +126,8 @@ export type PageBlock =
   | CtaSplitBlock
   | RichTextBlock
   | ImageBlock
-  | SpacerBlock;
+  | SpacerBlock
+  | IntakeFormBlock;
 
 export interface PageSchema {
   version: typeof PAGE_SCHEMA_VERSION;
@@ -146,6 +156,7 @@ export const BLOCK_LABELS: Record<PageBlockType, string> = {
   rich_text: "Paragraph block",
   image: "Single image + caption",
   spacer: "Vertical spacer",
+  intake_form: "Intake form",
 };
 
 export const BLOCK_DESCRIPTIONS: Record<PageBlockType, string> = {
@@ -159,4 +170,6 @@ export const BLOCK_DESCRIPTIONS: Record<PageBlockType, string> = {
   rich_text: "A plain, readable stack of paragraphs.",
   image: "One image with an optional caption.",
   spacer: "Adds breathing room between blocks.",
+  intake_form:
+    "Drops a trip intake form right on this page — pick which form to show.",
 };

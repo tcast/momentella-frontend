@@ -132,6 +132,15 @@ function makeBlock(type: PageBlockType): PageBlock {
         type: "spacer",
         size: "medium",
       };
+    case "intake_form":
+      return {
+        id: newBlockId("form"),
+        type: "intake_form",
+        slug: "",
+        eyebrow: "",
+        title: "Tell us about your trip",
+        body: "",
+      };
     default: {
       const _ex: never = type;
       return _ex;

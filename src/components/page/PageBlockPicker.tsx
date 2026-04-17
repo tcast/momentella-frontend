@@ -14,6 +14,7 @@ const ORDER: PageBlockType[] = [
   "process_steps",
   "testimonial",
   "cta_split",
+  "intake_form",
   "rich_text",
   "image",
   "spacer",
