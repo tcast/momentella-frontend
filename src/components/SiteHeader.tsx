@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { AuthNav } from "@/components/auth/AuthNav";
 
+// Using absolute anchor URLs (/#foo) so the links route to the homepage and
+// scroll from anywhere — e.g. /admin, /p/about, /intake/..., etc.
 const nav = [
-  { href: "#approach", label: "Approach" },
-  { href: "#journeys", label: "Journeys" },
-  { href: "#process", label: "How we plan" },
-  { href: "#contact", label: "Connect" },
+  { href: "/#approach", label: "Approach" },
+  { href: "/#journeys", label: "Journeys" },
+  { href: "/#process", label: "How we plan" },
+  { href: "/#contact", label: "Connect" },
 ] as const;
 
 export function SiteHeader() {
@@ -36,7 +38,7 @@ export function SiteHeader() {
           <div className="flex shrink-0 items-center gap-3 sm:gap-4">
             <AuthNav />
             <Link
-              href="#contact"
+              href="/#contact"
               className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-canvas transition hover:bg-accent-deep sm:px-5"
             >
               Plan a trip
