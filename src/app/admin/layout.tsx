@@ -42,6 +42,12 @@ export default function AdminLayout({
           <Link className="hover:text-ink" href="/admin/intake/submissions">
             Submissions
           </Link>
+          <Link className="hover:text-ink" href="/admin/airports">
+            Airports
+          </Link>
+          <Link className="hover:text-ink" href="/admin/destinations">
+            Destinations
+          </Link>
         </nav>
         {children}
       </main>

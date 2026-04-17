@@ -97,6 +97,20 @@ function makeField(type: FormFieldType): FormField {
         maxChildren: 10,
         collectChildAges: true,
       };
+    case "airport":
+      return {
+        id,
+        type: "airport",
+        label: "Home airport",
+        description: "Type a city, airport name, or 3-letter code (e.g. DTW).",
+      };
+    case "destination":
+      return {
+        id,
+        type: "destination",
+        label: "Where would you like to go?",
+        allowMultiple: true,
+      };
     default:
       return { id, type: "text", label: "Your question here" };
   }
@@ -173,6 +187,14 @@ export function FormBuilderClient({
     setSchema((s) => ({
       ...s,
       fields: [...s.fields, makeField(type)],
+    }));
+    setTab("design");
+  }
+
+  function insertField(field: FormField) {
+    setSchema((s) => ({
+      ...s,
+      fields: [...s.fields, field],
     }));
     setTab("design");
   }
@@ -300,7 +322,7 @@ export function FormBuilderClient({
         </div>
       ) : (
         <>
-          <AddFieldPicker onPick={addField} />
+          <AddFieldPicker onPickType={addField} onInsertField={insertField} />
 
           {fields.length === 0 ? (
             <p className="text-center text-sm text-ink-muted">

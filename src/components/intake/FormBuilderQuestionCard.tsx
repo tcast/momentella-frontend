@@ -16,6 +16,8 @@ const FRIENDLY_TYPE: Record<FormField["type"], string> = {
   multiselect: "Multiple choice",
   checkbox: "Checkbox",
   travel_party: "Who’s traveling",
+  airport: "Airport picker (searchable)",
+  destination: "Destination picker (searchable)",
 };
 
 type Props = {
@@ -199,6 +201,33 @@ export function FormBuilderQuestionCard({
                 className="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm"
               />
             </div>
+          </div>
+        )}
+
+        {field.type === "airport" && (
+          <p className="rounded-lg border border-dashed border-line bg-canvas/50 px-3 py-2 text-xs text-ink-muted">
+            Guests will get a live search box that finds airports by city name,
+            airport name, or 3-letter code (e.g. <strong>DTW</strong> → Detroit).
+            Manage the list under <strong>Admin → Airports</strong>.
+          </p>
+        )}
+
+        {field.type === "destination" && (
+          <div className="space-y-3 rounded-xl border border-dashed border-line bg-canvas/40 p-4">
+            <p className="text-xs text-ink-muted">
+              Guests search a catalog of countries, states, cities, parks, and
+              resorts. Manage the list under <strong>Admin → Destinations</strong>.
+            </p>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={!!field.allowMultiple}
+                onChange={(e) =>
+                  onPatch({ allowMultiple: e.target.checked })
+                }
+              />
+              Let guests pick more than one destination
+            </label>
           </div>
         )}
 

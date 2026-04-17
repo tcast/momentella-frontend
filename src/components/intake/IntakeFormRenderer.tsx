@@ -7,6 +7,15 @@ import type {
   TravelPartyField,
 } from "@/lib/intake-schema";
 import { getPublicAppUrl } from "@/lib/env-public";
+import {
+  AirportPicker,
+  type AirportValue,
+} from "@/components/intake/AirportPicker";
+import {
+  DestinationMultiPicker,
+  DestinationPicker,
+  type DestinationValue,
+} from "@/components/intake/DestinationPicker";
 
 type Responses = Record<string, unknown>;
 
@@ -238,6 +247,30 @@ function FieldControl({
           className={common}
         />
       );
+    case "airport":
+      return (
+        <AirportPicker
+          value={(value as AirportValue | null) ?? null}
+          onChange={(v) => onChange(v)}
+        />
+      );
+    case "destination": {
+      if (field.allowMultiple) {
+        const arr = Array.isArray(value) ? (value as DestinationValue[]) : [];
+        return (
+          <DestinationMultiPicker
+            value={arr}
+            onChange={(v) => onChange(v)}
+          />
+        );
+      }
+      return (
+        <DestinationPicker
+          value={(value as DestinationValue | null) ?? null}
+          onChange={(v) => onChange(v)}
+        />
+      );
+    }
     default:
       return null;
   }

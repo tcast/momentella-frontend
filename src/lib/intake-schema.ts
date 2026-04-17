@@ -13,7 +13,9 @@ export type FormFieldType =
   | "select"
   | "multiselect"
   | "checkbox"
-  | "travel_party";
+  | "travel_party"
+  | "airport"
+  | "destination";
 
 export interface FieldOption {
   value: string;
@@ -65,6 +67,17 @@ export interface TravelPartyField extends FormFieldBase {
   collectChildAges: boolean;
 }
 
+/** Searchable airport picker backed by the admin airport catalog. */
+export interface AirportField extends FormFieldBase {
+  type: "airport";
+}
+
+/** Searchable destination picker backed by the admin destination catalog. */
+export interface DestinationField extends FormFieldBase {
+  type: "destination";
+  allowMultiple?: boolean;
+}
+
 export type FormField =
   | SectionField
   | TextField
@@ -72,7 +85,9 @@ export type FormField =
   | DateField
   | SelectField
   | CheckboxField
-  | TravelPartyField;
+  | TravelPartyField
+  | AirportField
+  | DestinationField;
 
 export interface IntakeFormSchema {
   version: typeof FORM_SCHEMA_VERSION;
