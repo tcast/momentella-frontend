@@ -2,12 +2,12 @@ import Link from "next/link";
 import { AuthNav } from "@/components/auth/AuthNav";
 
 // Anchor links use absolute /#foo so they route to the homepage and scroll
-// from anywhere (/admin, /p/about, /intake/...). /connect is a real page.
+// from anywhere (/admin, /p/about, /intake/...). The "Plan a trip" button
+// handles the /connect CTA, so we don't duplicate it in this list.
 const nav = [
   { href: "/#approach", label: "Approach" },
   { href: "/#journeys", label: "Journeys" },
   { href: "/#process", label: "How we plan" },
-  { href: "/connect", label: "Connect" },
 ] as const;
 
 export function SiteHeader() {
