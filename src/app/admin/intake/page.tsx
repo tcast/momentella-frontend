@@ -9,6 +9,7 @@ type IntakeFormRow = {
   slug: string;
   name: string;
   description: string | null;
+  archived: boolean;
   updatedAt: string;
   versions: { id: string; version: number; published: boolean }[];
 };
@@ -50,6 +51,11 @@ export default async function AdminIntakeIndexPage() {
                     className="font-semibold text-ink hover:underline"
                   >
                     {f.name}
+                    {f.archived ? (
+                      <span className="ml-2 text-xs font-normal uppercase tracking-wider text-ink-muted">
+                        (archived)
+                      </span>
+                    ) : null}
                   </Link>
                   <p className="text-xs text-ink-muted">
                     /intake/{f.slug}

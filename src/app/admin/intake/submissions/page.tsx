@@ -45,6 +45,7 @@ export default async function IntakeSubmissionsPage() {
                 <th className="px-3 py-2">Form</th>
                 <th className="px-3 py-2">Email</th>
                 <th className="px-3 py-2">Status</th>
+                <th className="px-3 py-2"> </th>
               </tr>
             </thead>
             <tbody>
@@ -63,6 +64,14 @@ export default async function IntakeSubmissionsPage() {
                   <td className="px-3 py-3">{s.email}</td>
                   <td className="px-3 py-3">
                     <IntakeSubmissionActions id={s.id} status={s.status} />
+                  </td>
+                  <td className="px-3 py-3">
+                    <Link
+                      href={`/admin/intake/submissions/${s.id}`}
+                      className="text-sm font-semibold text-accent hover:underline"
+                    >
+                      View
+                    </Link>
                   </td>
                 </tr>
               ))}

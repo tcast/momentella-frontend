@@ -1,5 +1,20 @@
 "use client";
 
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import type {
@@ -9,6 +24,7 @@ import type {
 } from "@/lib/intake-schema";
 import { FORM_SCHEMA_VERSION } from "@/lib/intake-schema";
 import { getPublicAppUrl } from "@/lib/env-public";
+import { FormBuilderSortableRow } from "./FormBuilderSortableRow";
 
 function newFieldId(): string {
   return `field_${Math.random().toString(36).slice(2, 10)}`;
@@ -86,7 +102,25 @@ export function FormBuilderClient({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
   const fields = useMemo(() => schema.fields, [schema.fields]);
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setSchema((s) => {
+      const oldIndex = s.fields.findIndex((f) => f.id === active.id);
+      const newIndex = s.fields.findIndex((f) => f.id === over.id);
+      if (oldIndex < 0 || newIndex < 0) return s;
+      return { ...s, fields: arrayMove(s.fields, oldIndex, newIndex) };
+    });
+  }
 
   function move(idx: number, dir: -1 | 1) {
     const next = idx + dir;
@@ -233,13 +267,32 @@ export function FormBuilderClient({
         ))}
       </div>
 
-      <ul className="space-y-4">
-        {fields.map((field, idx) => (
-          <li
-            key={field.id}
-            className="rounded-xl border border-line bg-white/70 p-4 shadow-sm"
-          >
+      <p className="text-xs text-ink-muted">
+        Drag <span className="font-semibold">⠿</span> to reorder fields (or use Up / Down).
+      </p>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={fields.map((f) => f.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <ul className="space-y-4">
+            {fields.map((field, idx) => (
+              <FormBuilderSortableRow key={field.id} id={field.id}>
+                {(dragProps) => (
+                  <div>
             <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                className="cursor-grab touch-manipulation text-lg leading-none text-ink-muted hover:text-ink"
+                {...dragProps}
+                aria-label="Drag to reorder"
+              >
+                ⠿
+              </button>
               <span className="text-xs font-mono text-ink-muted">{field.type}</span>
               <button
                 type="button"
@@ -336,9 +389,13 @@ export function FormBuilderClient({
                 Collect child ages
               </label>
             )}
-          </li>
-        ))}
-      </ul>
+                  </div>
+                )}
+              </FormBuilderSortableRow>
+            ))}
+          </ul>
+        </SortableContext>
+      </DndContext>
     </div>
   );
 }

@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArchiveIntakeFormToggle } from "@/components/intake/ArchiveIntakeFormToggle";
+import { DuplicateIntakeFormButton } from "@/components/intake/DuplicateIntakeFormButton";
 import { NewIntakeVersionButton } from "@/components/intake/NewIntakeVersionButton";
 import { serverFetchJson } from "@/lib/server-fetch";
 
@@ -11,6 +13,7 @@ type FormDetail = {
     slug: string;
     name: string;
     description: string | null;
+    archived: boolean;
     versions: {
       id: string;
       version: number;
@@ -45,6 +48,11 @@ export default async function IntakeFormDetailPage({
           </Link>
           <h2 className="mt-4 font-display text-2xl font-semibold text-ink">
             {form.name}
+            {form.archived ? (
+              <span className="ml-2 rounded-full bg-ink/10 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-ink-muted">
+                Archived
+              </span>
+            ) : null}
           </h2>
           <p className="text-sm text-ink-muted">Slug: {form.slug}</p>
           {form.description ? (
@@ -59,7 +67,11 @@ export default async function IntakeFormDetailPage({
             </Link>
           </p>
         </div>
-        <NewIntakeVersionButton formId={form.id} />
+        <div className="flex flex-wrap items-center gap-3">
+          <DuplicateIntakeFormButton formId={form.id} defaultName={form.name} />
+          <ArchiveIntakeFormToggle formId={form.id} archived={form.archived} />
+          <NewIntakeVersionButton formId={form.id} />
+        </div>
       </div>
 
       <section>
