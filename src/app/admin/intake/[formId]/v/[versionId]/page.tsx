@@ -53,10 +53,10 @@ export default async function IntakeVersionBuilderPage({
       </div>
       <div>
         <h2 className="font-display text-2xl font-semibold text-ink">
-          Edit version {ver.version}
+          {data.form.name} — version {ver.version}
           {ver.published ? (
             <span className="ml-2 rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-900">
-              Published
+              Live
             </span>
           ) : (
             <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">
@@ -64,15 +64,20 @@ export default async function IntakeVersionBuilderPage({
             </span>
           )}
         </h2>
-        <p className="mt-1 text-sm text-ink-muted">
-          Public URL:{" "}
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted">
+          Below is a simple, visual form builder—add questions in everyday language,
+          drag to reorder, and use <strong>Preview as guest</strong> to see the exact
+          experience travelers get. Families use your public link (only the{" "}
+          <strong>published</strong> version appears there).
+        </p>
+        <p className="mt-2 text-sm text-ink-muted">
+          Public page:{" "}
           <Link
             href={`/intake/${data.form.slug}`}
             className="font-semibold text-accent hover:underline"
           >
             /intake/{data.form.slug}
-          </Link>{" "}
-          (shows the published version)
+          </Link>
         </p>
       </div>
       <FormBuilderClient

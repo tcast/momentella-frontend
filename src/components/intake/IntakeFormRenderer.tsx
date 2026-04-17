@@ -246,9 +246,12 @@ function FieldControl({
 export function IntakeFormRenderer({
   slug,
   schema,
+  preview = false,
 }: {
   slug: string;
   schema: IntakeFormSchema;
+  /** When true, shows the form as guests see it without submitting. */
+  preview?: boolean;
 }) {
   const [responses, setResponses] = useState<Responses>({});
   const [error, setError] = useState<string | null>(null);
@@ -261,6 +264,7 @@ export function IntakeFormRenderer({
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (preview) return;
     setError(null);
     const emailField = schema.fields.find((f) => f.type === "email");
     const emailRaw =
@@ -314,6 +318,12 @@ export function IntakeFormRenderer({
 
   return (
     <form onSubmit={onSubmit} className="space-y-8">
+      {preview ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          <strong>Preview</strong> — this is how the form looks to families. Nothing is
+          saved until they submit on your live page.
+        </div>
+      ) : null}
       {error ? (
         <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
           {error}
@@ -354,11 +364,12 @@ export function IntakeFormRenderer({
         );
       })}
       <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded-full bg-ink py-3 text-sm font-semibold text-canvas transition hover:bg-accent-deep disabled:opacity-60 sm:w-auto sm:px-10"
+        type={preview ? "button" : "submit"}
+        disabled={pending || preview}
+        onClick={preview ? (e) => e.preventDefault() : undefined}
+        className="w-full rounded-full bg-ink py-3 text-sm font-semibold text-canvas transition hover:bg-accent-deep disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-10"
       >
-        {pending ? "Sending…" : "Submit intake"}
+        {preview ? "Submit (disabled in preview)" : pending ? "Sending…" : "Submit intake"}
       </button>
     </form>
   );

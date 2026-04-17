@@ -22,9 +22,11 @@ import type {
   FormFieldType,
   IntakeFormSchema,
 } from "@/lib/intake-schema";
-import { FORM_SCHEMA_VERSION } from "@/lib/intake-schema";
 import { getPublicAppUrl } from "@/lib/env-public";
+import { AddFieldPicker } from "./AddFieldPicker";
+import { FormBuilderQuestionCard } from "./FormBuilderQuestionCard";
 import { FormBuilderSortableRow } from "./FormBuilderSortableRow";
+import { IntakeFormRenderer } from "./IntakeFormRenderer";
 
 function newFieldId(): string {
   return `field_${Math.random().toString(36).slice(2, 10)}`;
@@ -34,15 +36,25 @@ function makeField(type: FormFieldType): FormField {
   const id = newFieldId();
   switch (type) {
     case "section":
-      return { id, type: "section", label: "New section" };
+      return {
+        id,
+        type: "section",
+        label: "New section",
+        description: "",
+      };
     case "text":
-      return { id, type: "text", label: "Question", required: false };
+      return { id, type: "text", label: "Your question here", required: false };
     case "email":
-      return { id, type: "email", label: "Email", required: true };
+      return { id, type: "email", label: "Email address", required: true };
     case "tel":
-      return { id, type: "tel", label: "Phone" };
+      return { id, type: "tel", label: "Phone number" };
     case "textarea":
-      return { id, type: "textarea", label: "Details" };
+      return {
+        id,
+        type: "textarea",
+        label: "Tell us more",
+        required: false,
+      };
     case "number":
       return { id, type: "number", label: "Number", min: 0 };
     case "date":
@@ -51,29 +63,34 @@ function makeField(type: FormFieldType): FormField {
       return {
         id,
         type: "select",
-        label: "Choose one",
+        label: "Choose one option",
         options: [
-          { value: "a", label: "Option A" },
-          { value: "b", label: "Option B" },
+          { value: "option_1", label: "First option" },
+          { value: "option_2", label: "Second option" },
         ],
       };
     case "multiselect":
       return {
         id,
         type: "multiselect",
-        label: "Choose any",
+        label: "Select all that apply",
         options: [
-          { value: "a", label: "Option A" },
-          { value: "b", label: "Option B" },
+          { value: "option_1", label: "First option" },
+          { value: "option_2", label: "Second option" },
         ],
       };
     case "checkbox":
-      return { id, type: "checkbox", label: "Confirm", required: false };
+      return {
+        id,
+        type: "checkbox",
+        label: "I agree to the terms",
+        required: false,
+      };
     case "travel_party":
       return {
         id,
         type: "travel_party",
-        label: "Travelers",
+        label: "Who will be traveling?",
         required: true,
         minAdults: 1,
         maxAdults: 12,
@@ -81,7 +98,7 @@ function makeField(type: FormFieldType): FormField {
         collectChildAges: true,
       };
     default:
-      return { id, type: "text", label: "Question" };
+      return { id, type: "text", label: "Your question here" };
   }
 }
 
@@ -101,9 +118,10 @@ export function FormBuilderClient({
   const [label, setLabel] = useState(versionLabel ?? "");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [tab, setTab] = useState<"design" | "preview">("design");
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 10 } }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
@@ -156,6 +174,7 @@ export function FormBuilderClient({
       ...s,
       fields: [...s.fields, makeField(type)],
     }));
+    setTab("design");
   }
 
   function save() {
@@ -205,197 +224,131 @@ export function FormBuilderClient({
   return (
     <div className="space-y-8">
       {error ? (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
+        <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
           {error}
         </p>
       ) : null}
-      <div className="flex flex-wrap items-end gap-4">
-        <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-ink-muted">
-            Version label
-          </label>
-          <input
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            className="mt-1 rounded-lg border border-line bg-canvas px-3 py-2 text-sm text-ink"
-          />
-        </div>
-        <button
-          type="button"
-          onClick={() => void save()}
-          disabled={pending}
-          className="rounded-full bg-ink px-5 py-2 text-sm font-semibold text-canvas hover:bg-accent-deep disabled:opacity-60"
-        >
-          Save draft
-        </button>
-        <button
-          type="button"
-          onClick={() => void publish()}
-          disabled={pending}
-          className="rounded-full border border-line bg-white px-5 py-2 text-sm font-semibold text-ink hover:bg-canvas disabled:opacity-60"
-        >
-          Publish this version
-        </button>
-      </div>
 
-      <div className="flex flex-wrap gap-2">
-        <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
-          Add field:
-        </span>
-        {(
-          [
-            "section",
-            "text",
-            "email",
-            "textarea",
-            "number",
-            "date",
-            "select",
-            "multiselect",
-            "checkbox",
-            "travel_party",
-          ] as const
-        ).map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => addField(t)}
-            className="rounded-full border border-line bg-white px-3 py-1 text-xs font-semibold text-ink hover:bg-canvas"
-          >
-            + {t.replaceAll("_", " ")}
-          </button>
-        ))}
-      </div>
-
-      <p className="text-xs text-ink-muted">
-        Drag <span className="font-semibold">⠿</span> to reorder fields (or use Up / Down).
-      </p>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext
-          items={fields.map((f) => f.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          <ul className="space-y-4">
-            {fields.map((field, idx) => (
-              <FormBuilderSortableRow key={field.id} id={field.id}>
-                {(dragProps) => (
-                  <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                className="cursor-grab touch-manipulation text-lg leading-none text-ink-muted hover:text-ink"
-                {...dragProps}
-                aria-label="Drag to reorder"
-              >
-                ⠿
-              </button>
-              <span className="text-xs font-mono text-ink-muted">{field.type}</span>
-              <button
-                type="button"
-                className="text-xs text-accent hover:underline"
-                onClick={() => move(idx, -1)}
-              >
-                Up
-              </button>
-              <button
-                type="button"
-                className="text-xs text-accent hover:underline"
-                onClick={() => move(idx, 1)}
-              >
-                Down
-              </button>
-              <button
-                type="button"
-                className="text-xs text-red-800 hover:underline"
-                onClick={() => remove(idx)}
-              >
-                Remove
-              </button>
-            </div>
-            {field.type !== "section" ? (
-              <label className="mt-2 block text-xs font-semibold uppercase text-ink-muted">
-                Field id (stable)
-                <input
-                  value={field.id}
-                  onChange={(e) => patchField(idx, { id: e.target.value } as Partial<FormField>)}
-                  className="mt-1 w-full font-mono text-xs text-ink"
-                />
-              </label>
-            ) : null}
-            <label className="mt-2 block text-sm font-semibold text-ink">
-              Label
-              <input
-                value={field.label}
-                onChange={(e) => patchField(idx, { label: e.target.value })}
-                className="mt-1 w-full rounded border border-line bg-canvas px-2 py-1.5 text-sm"
-              />
+      <div className="rounded-2xl border border-line bg-gradient-to-b from-white to-canvas/80 p-6 shadow-sm">
+        <h2 className="font-display text-xl font-semibold text-ink">
+          Build your intake form
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted">
+          Add questions in plain language. Drag the grip icon to change order. Use{" "}
+          <strong>Preview</strong> to see exactly what travelers see. When you’re
+          ready, <strong>Publish</strong> makes this version live on your website.
+        </p>
+        <div className="mt-5 flex flex-wrap items-end gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-ink">
+              Name this version <span className="font-normal text-ink-muted">(optional)</span>
             </label>
-            {"description" in field && field.type !== "checkbox" ? (
-              <label className="mt-2 block text-xs text-ink-muted">
-                Description
-                <input
-                  value={field.description ?? ""}
-                  onChange={(e) =>
-                    patchField(idx, { description: e.target.value || undefined })
-                  }
-                  className="mt-1 w-full rounded border border-line bg-canvas px-2 py-1.5 text-sm text-ink"
-                />
-              </label>
-            ) : null}
-            {field.type !== "section" ? (
-              <label className="mt-2 flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={!!field.required}
-                  onChange={(e) => patchField(idx, { required: e.target.checked })}
-                />
-                Required
-              </label>
-            ) : null}
-            {(field.type === "select" || field.type === "multiselect") && (
-              <label className="mt-2 block text-xs text-ink-muted">
-                Options (JSON array of {"{value,label}"})
-                <textarea
-                  value={JSON.stringify(field.options, null, 2)}
-                  onChange={(e) => {
-                    try {
-                      const parsed = JSON.parse(e.target.value) as {
-                        value: string;
-                        label: string;
-                      }[];
-                      patchField(idx, { options: parsed });
-                    } catch {
-                      /* ignore */
-                    }
-                  }}
-                  rows={6}
-                  className="mt-1 w-full font-mono text-xs text-ink"
-                />
-              </label>
-            )}
-            {field.type === "travel_party" && (
-              <label className="mt-2 flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={field.collectChildAges}
-                  onChange={(e) =>
-                    patchField(idx, { collectChildAges: e.target.checked })
-                  }
-                />
-                Collect child ages
-              </label>
-            )}
-                  </div>
-                )}
-              </FormBuilderSortableRow>
-            ))}
-          </ul>
-        </SortableContext>
-      </DndContext>
+            <input
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              className="mt-1.5 w-full min-w-[12rem] rounded-xl border border-line bg-white px-3 py-2.5 text-sm text-ink shadow-sm sm:max-w-xs"
+              placeholder="e.g. Spring 2026"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => void save()}
+            disabled={pending}
+            className="rounded-full bg-ink px-6 py-2.5 text-sm font-semibold text-canvas shadow-sm hover:bg-accent-deep disabled:opacity-60"
+          >
+            Save my changes
+          </button>
+          <button
+            type="button"
+            onClick={() => void publish()}
+            disabled={pending}
+            className="rounded-full border-2 border-accent bg-white px-6 py-2.5 text-sm font-semibold text-ink shadow-sm hover:bg-accent/5 disabled:opacity-60"
+          >
+            Publish — go live
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2 rounded-full border border-line bg-white p-1 shadow-sm">
+        <button
+          type="button"
+          onClick={() => setTab("design")}
+          className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
+            tab === "design"
+              ? "bg-ink text-canvas shadow"
+              : "text-ink-muted hover:text-ink"
+          }`}
+        >
+          Design
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("preview")}
+          className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
+            tab === "preview"
+              ? "bg-ink text-canvas shadow"
+              : "text-ink-muted hover:text-ink"
+          }`}
+        >
+          Preview as guest
+        </button>
+      </div>
+
+      {tab === "preview" ? (
+        <div className="rounded-2xl border border-line bg-white p-6 shadow-sm">
+          <IntakeFormRenderer slug="preview" schema={schema} preview />
+        </div>
+      ) : (
+        <>
+          <AddFieldPicker onPick={addField} />
+
+          {fields.length === 0 ? (
+            <p className="text-center text-sm text-ink-muted">
+              No questions yet. Tap <strong>Add a question or section</strong> above.
+            </p>
+          ) : (
+            <>
+              <p className="text-sm text-ink-muted">
+                <strong>Tip:</strong> Drag the{" "}
+                <span className="inline-block rounded border border-line bg-white px-1">
+                  ⋮⋮
+                </span>{" "}
+                handle to reorder. Use Up/Down if you prefer buttons.
+              </p>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={fields.map((f) => f.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <ul className="space-y-5">
+                    {fields.map((field, idx) => (
+                      <FormBuilderSortableRow key={field.id} id={field.id}>
+                        {(dragProps) => (
+                          <FormBuilderQuestionCard
+                            field={field}
+                            index={idx}
+                            dragProps={dragProps}
+                            onPatch={(patch) => patchField(idx, patch)}
+                            onRemove={() => remove(idx)}
+                            onMoveUp={() => move(idx, -1)}
+                            onMoveDown={() => move(idx, 1)}
+                            canMoveUp={idx > 0}
+                            canMoveDown={idx < fields.length - 1}
+                          />
+                        )}
+                      </FormBuilderSortableRow>
+                    ))}
+                  </ul>
+                </SortableContext>
+              </DndContext>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }

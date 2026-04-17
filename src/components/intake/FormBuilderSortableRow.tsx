@@ -26,9 +26,7 @@ export function FormBuilderSortableRow({
     <li
       ref={setNodeRef}
       style={style}
-      className={`rounded-xl border border-line bg-white/70 p-4 shadow-sm ${
-        isDragging ? "z-20 ring-2 ring-accent/50" : ""
-      }`}
+      className={`list-none ${isDragging ? "z-30 opacity-95 shadow-xl ring-2 ring-accent/40" : ""}`}
     >
       {children(dragProps)}
     </li>
