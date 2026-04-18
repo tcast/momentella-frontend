@@ -38,7 +38,55 @@ export function UsersAdminTable({ users }: { users: UserRow[] }) {
   const router = useRouter();
   const [msg, setMsg] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
   const [pending, startTransition] = useTransition();
+
+  function beginEdit(u: UserRow) {
+    setEditingId(u.id);
+    setEditName(u.name ?? "");
+    setEditEmail(u.email);
+    setMsg(null);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditName("");
+    setEditEmail("");
+  }
+
+  function saveEdit(u: UserRow) {
+    const nextName = editName.trim();
+    const nextEmail = editEmail.trim().toLowerCase();
+    if (!nextName) {
+      setMsg("Name can’t be empty.");
+      return;
+    }
+    if (nextName === u.name && nextEmail === u.email.toLowerCase()) {
+      cancelEdit();
+      return;
+    }
+    startTransition(async () => {
+      const res = await fetch(`${getPublicAppUrl()}/api/admin/users/${u.id}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: nextName, email: nextEmail }),
+      });
+      if (!res.ok) {
+        const j: unknown = await res.json().catch(() => null);
+        setMsg(
+          j && typeof j === "object" && "error" in j
+            ? String((j as { error: unknown }).error)
+            : "Could not save",
+        );
+        return;
+      }
+      cancelEdit();
+      router.refresh();
+    });
+  }
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -157,21 +205,62 @@ export function UsersAdminTable({ users }: { users: UserRow[] }) {
                 className="border-b border-line/70 transition-colors last:border-b-0 hover:bg-canvas/40"
               >
                 <td className="px-5 py-4">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-start gap-3">
                     <div
                       aria-hidden
                       className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/10 text-sm font-semibold text-accent-deep"
                     >
-                      {initials(u.name, u.email)}
+                      {initials(
+                        editingId === u.id ? editName : u.name,
+                        editingId === u.id ? editEmail : u.email,
+                      )}
                     </div>
-                    <div className="min-w-0">
-                      <p className="truncate text-base font-semibold text-ink">
-                        {u.name || "—"}
-                      </p>
-                      <p className="truncate text-xs text-ink-muted">
-                        {u.email}
-                      </p>
-                    </div>
+                    {editingId === u.id ? (
+                      <div className="min-w-0 flex-1 space-y-2">
+                        <input
+                          type="text"
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          placeholder="Full name"
+                          className="w-full rounded-lg border border-line bg-white px-2.5 py-1.5 text-sm font-semibold text-ink"
+                          autoFocus
+                        />
+                        <input
+                          type="email"
+                          value={editEmail}
+                          onChange={(e) => setEditEmail(e.target.value)}
+                          placeholder="email@example.com"
+                          className="w-full rounded-lg border border-line bg-white px-2.5 py-1.5 text-xs text-ink-muted"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => saveEdit(u)}
+                            disabled={pending}
+                            className="rounded-full bg-ink px-3 py-1 text-[11px] font-semibold text-canvas hover:bg-accent-deep disabled:opacity-60"
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            onClick={cancelEdit}
+                            disabled={pending}
+                            className="rounded-full border border-line bg-white px-3 py-1 text-[11px] font-semibold text-ink-muted hover:bg-canvas"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="min-w-0">
+                        <p className="truncate text-base font-semibold text-ink">
+                          {u.name || "—"}
+                        </p>
+                        <p className="truncate text-xs text-ink-muted">
+                          {u.email}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </td>
                 <td className="px-4 py-4">
@@ -211,25 +300,37 @@ export function UsersAdminTable({ users }: { users: UserRow[] }) {
                   {formatJoined(u.createdAt)}
                 </td>
                 <td className="px-4 py-4 text-right">
-                  {u.banned ? (
-                    <button
-                      type="button"
-                      disabled={pending}
-                      onClick={() => unban(u.id)}
-                      className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-canvas disabled:opacity-60"
-                    >
-                      Unban
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      disabled={pending}
-                      onClick={() => ban(u.id)}
-                      className="rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-800 hover:bg-red-50 disabled:opacity-60"
-                    >
-                      Ban
-                    </button>
-                  )}
+                  <div className="flex items-center justify-end gap-2">
+                    {editingId === u.id ? null : (
+                      <button
+                        type="button"
+                        disabled={pending}
+                        onClick={() => beginEdit(u)}
+                        className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-canvas disabled:opacity-60"
+                      >
+                        Edit
+                      </button>
+                    )}
+                    {u.banned ? (
+                      <button
+                        type="button"
+                        disabled={pending}
+                        onClick={() => unban(u.id)}
+                        className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-canvas disabled:opacity-60"
+                      >
+                        Unban
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={pending}
+                        onClick={() => ban(u.id)}
+                        className="rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-800 hover:bg-red-50 disabled:opacity-60"
+                      >
+                        Ban
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
