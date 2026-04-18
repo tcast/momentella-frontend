@@ -3,28 +3,100 @@
 import { useState } from "react";
 import type { FormField, IntakeFormSchema } from "@/lib/intake-schema";
 
+function asRecord(v: unknown): Record<string, unknown> | null {
+  return v && typeof v === "object" && !Array.isArray(v)
+    ? (v as Record<string, unknown>)
+    : null;
+}
+
+function formatAirport(v: unknown): string {
+  const o = asRecord(v);
+  if (!o) return "—";
+  const iata = typeof o.iata === "string" ? o.iata : "";
+  const name = typeof o.name === "string" ? o.name : "";
+  const city = typeof o.city === "string" ? o.city : "";
+  const country = typeof o.country === "string" ? o.country : "";
+  const main = [iata, name].filter(Boolean).join(" — ");
+  const locale = [city, country].filter(Boolean).join(", ");
+  return locale ? `${main} · ${locale}` : main;
+}
+
+function formatDestinationOne(v: unknown): string {
+  const o = asRecord(v);
+  if (!o) return "—";
+  const name = typeof o.name === "string" ? o.name : "";
+  const region = typeof o.region === "string" ? o.region : "";
+  const country = typeof o.country === "string" ? o.country : "";
+  const locale = [region, country]
+    .filter((s) => s && !name.includes(s))
+    .join(", ");
+  return locale ? `${name} (${locale})` : name;
+}
+
+const TP_COUNT = (n: unknown) => (typeof n === "number" ? n : Number(n) || 0);
+
 function formatValue(field: FormField, val: unknown): string {
-  if (val === undefined || val === null) return "—";
-  if (field.type === "travel_party" && typeof val === "object" && val !== null) {
-    const tp = val as Record<string, unknown>;
+  if (val === undefined || val === null || val === "") return "—";
+
+  if (field.type === "travel_party") {
+    const tp = asRecord(val);
+    if (!tp) return "—";
+    const adults = TP_COUNT(tp.adults);
+    const children = TP_COUNT(tp.children);
     const ages = tp.childAges;
-    let s = `Adults: ${String(tp.adults)}, children: ${String(tp.children)}`;
+    const parts = [
+      `${adults} adult${adults === 1 ? "" : "s"}`,
+      `${children} child${children === 1 ? "" : "ren"}`,
+    ];
+    let s = parts.join(" · ");
     if (Array.isArray(ages) && ages.length) {
-      s += ` · ages: ${ages.join(", ")}`;
+      s += ` · ages ${ages.join(", ")}`;
     }
     return s;
   }
+
+  if (field.type === "airport") {
+    return formatAirport(val);
+  }
+
+  if (field.type === "destination") {
+    if (Array.isArray(val)) {
+      const lines = val.map(formatDestinationOne).filter(Boolean);
+      return lines.length ? lines.join("\n") : "—";
+    }
+    return formatDestinationOne(val);
+  }
+
   if (field.type === "multiselect" && Array.isArray(val)) {
     return val
       .map((v) => field.options.find((o) => o.value === v)?.label ?? String(v))
       .join(", ");
   }
+
   if (field.type === "select") {
     return field.options.find((o) => o.value === val)?.label ?? String(val);
   }
+
+  if (field.type === "checkbox") {
+    return val === true ? "Yes" : "No";
+  }
+
+  if (field.type === "date" && typeof val === "string") {
+    const d = new Date(val);
+    if (!Number.isNaN(d.valueOf())) {
+      return d.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    }
+    return val;
+  }
+
   if (typeof val === "object") {
     return JSON.stringify(val, null, 2);
   }
+
   return String(val);
 }
 
