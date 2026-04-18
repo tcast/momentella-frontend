@@ -12,7 +12,7 @@ export default function AdminLayout({
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-6xl flex-1 px-5 pb-20 pt-28 sm:pt-32 md:pt-28">
+      <main className="mx-auto w-full max-w-[90rem] flex-1 px-5 pb-20 pt-28 sm:pt-32 md:pt-28 md:px-10">
         <div className="mb-10 flex flex-col gap-4 border-b border-line/80 pb-8 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ink-muted">
