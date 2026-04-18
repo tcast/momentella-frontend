@@ -2,7 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { IntakeResponseView } from "@/components/intake/IntakeResponseView";
 import { IntakeSubmissionActions } from "@/components/intake/IntakeSubmissionActions";
-import { SubmissionNotesEditor } from "@/components/intake/SubmissionNotesEditor";
+import {
+  type NoteEntry,
+  SubmissionNotesThread,
+} from "@/components/intake/SubmissionNotesThread";
 import type { IntakeFormSchema } from "@/lib/intake-schema";
 import { serverFetchJson } from "@/lib/server-fetch";
 
@@ -14,12 +17,12 @@ type SubmissionDetail = {
     email: string;
     status: string;
     responses: Record<string, unknown>;
-    notes: string | null;
     createdAt: string;
     updatedAt: string;
     form: { id: string; name: string; slug: string };
     formVersion: { version: number; label: string | null };
     client: { id: string; email: string; name: string } | null;
+    notesThread: NoteEntry[];
   };
   schema: IntakeFormSchema | null;
 };
@@ -83,9 +86,9 @@ export default async function IntakeSubmissionDetailPage({
         </div>
       </div>
 
-      <SubmissionNotesEditor
+      <SubmissionNotesThread
         submissionId={submission.id}
-        initialNotes={submission.notes}
+        notes={submission.notesThread ?? []}
       />
 
       <section>
