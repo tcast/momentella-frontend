@@ -1,6 +1,7 @@
 "use client";
 
 import type { HTMLAttributes } from "react";
+import { ImageUploader } from "@/components/page/ImageUploader";
 import { IntakeFormSelect } from "@/components/page/IntakeFormSelect";
 import {
   BLOCK_LABELS,
@@ -548,22 +549,34 @@ function ImageInput({
   compact?: boolean;
 }) {
   return (
-    <div className="space-y-2 rounded-xl border border-dashed border-line bg-canvas/40 p-3">
+    <div className="space-y-3 rounded-xl border border-dashed border-line bg-canvas/40 p-3">
       <div
         className={`relative w-full overflow-hidden rounded-lg border border-line bg-ink/5 ${compact ? "aspect-[16/10]" : "aspect-[16/7]"}`}
       >
         {url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={url} alt={alt} className="h-full w-full object-cover" />
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={url} alt={alt} className="h-full w-full object-cover" />
+            <button
+              type="button"
+              onClick={() => onChange("", alt)}
+              className="absolute right-2 top-2 rounded-full bg-ink/80 px-2.5 py-1 text-[10px] font-semibold text-canvas shadow hover:bg-ink"
+            >
+              Remove
+            </button>
+          </>
         ) : (
           <div className="flex h-full w-full items-center justify-center p-4 text-center text-xs text-ink-muted">
-            Paste an image URL below. Try an Unsplash image or your own hosted
-            image (https).
+            No image yet — upload below or paste a public URL.
           </div>
         )}
       </div>
+      <ImageUploader
+        compact={compact}
+        onUploaded={(uploaded) => onChange(uploaded, alt)}
+      />
       <TextInput
-        label="Image URL"
+        label="…or paste an image URL"
         value={url}
         onChange={(v) => onChange(v, alt)}
         placeholder="https://…"
