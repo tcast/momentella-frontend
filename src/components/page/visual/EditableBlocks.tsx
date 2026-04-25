@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { IntakeFormBlockView } from "@/components/page/IntakeFormBlockView";
 import {
   type CtaSplitBlock,
@@ -82,25 +81,24 @@ function HeroEditable({
         <EditableImage
           url={block.imageUrl}
           alt={block.imageAlt}
-          emptyHint="Click to choose a hero image"
-          className="absolute inset-0"
+          emptyHint="Add a hero image"
           onChange={({ url, alt }) =>
             onPatch({ imageUrl: url, imageAlt: alt })
           }
         />
-        {block.imageUrl ? (
-          <>
-            <div
-              className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-stone-900/40 to-stone-900/20"
-              aria-hidden
-            />
-            <div
-              className="absolute inset-0 bg-gradient-to-r from-stone-950/45 via-transparent to-transparent"
-              aria-hidden
-            />
-          </>
-        ) : null}
       </div>
+      {block.imageUrl ? (
+        <>
+          <div
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-stone-950/80 via-stone-900/40 to-stone-900/20"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-stone-950/45 via-transparent to-transparent"
+            aria-hidden
+          />
+        </>
+      ) : null}
       <div className="relative mx-auto flex max-w-6xl flex-col justify-end px-5 pb-16 pt-20 sm:px-8 sm:pb-20 md:justify-center md:pb-24 md:pt-24"
         style={{ minHeight: "inherit" }}
       >
@@ -261,19 +259,18 @@ function FeatureTilesEditable({
                 <EditableImage
                   url={tile.imageUrl}
                   alt={tile.imageAlt}
-                  emptyHint="Click to choose tile image"
-                  className="absolute inset-0"
+                  emptyHint="Add tile image"
                   onChange={({ url, alt }) =>
                     patchTile(i, { imageUrl: url, imageAlt: alt })
                   }
                 />
                 {tile.imageUrl ? (
                   <div
-                    className="absolute inset-0 bg-gradient-to-t from-stone-950/70 via-stone-950/10 to-transparent"
+                    className="pointer-events-none absolute inset-0 bg-gradient-to-t from-stone-950/70 via-stone-950/10 to-transparent"
                     aria-hidden
                   />
                 ) : null}
-                <h3 className="absolute bottom-4 left-4 right-4 font-display text-2xl font-medium text-white drop-shadow-sm sm:text-[1.65rem]">
+                <h3 className="pointer-events-auto absolute bottom-4 left-4 right-4 z-10 font-display text-2xl font-medium text-white drop-shadow-sm sm:text-[1.65rem]">
                   <EditableText
                     value={tile.title}
                     onChange={(v) => patchTile(i, { title: v })}
@@ -563,8 +560,7 @@ function ImageEditable({
           <EditableImage
             url={block.imageUrl}
             alt={block.imageAlt}
-            emptyHint="Click to choose an image"
-            className="absolute inset-0"
+            emptyHint="Add an image"
             onChange={({ url, alt }) =>
               onPatch({ imageUrl: url, imageAlt: alt })
             }
@@ -748,6 +744,3 @@ function CtaPill({
   );
 }
 
-// Currently-unused export to satisfy linter for Link import in case we ever
-// want it back; harmless tree-shake.
-export const _unusedLink = Link;
