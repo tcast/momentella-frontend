@@ -53,6 +53,17 @@
   text-wrap: balance;
 }
 
+/* contentEditable placeholder used by the visual page builder */
+[contenteditable="true"]:empty::before {
+  content: attr(data-placeholder);
+  color: var(--ink-muted);
+  opacity: 0.45;
+  pointer-events: none;
+}
+[contenteditable="true"] {
+  cursor: text;
+}
+
 /* Subtle paper grain — behind all in-page content */
 .grain::before {
   content: "";

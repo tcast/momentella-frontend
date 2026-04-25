@@ -1,26 +1,9 @@
 "use client";
 
-import {
-  closestCenter,
-  DndContext,
-  type DragEndEvent,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
-import { FormBuilderSortableRow } from "@/components/intake/FormBuilderSortableRow";
 import { PageRenderer } from "@/components/page/PageRenderer";
-import { PageBlockCard } from "@/components/page/PageBlockCard";
-import { PageBlockPicker } from "@/components/page/PageBlockPicker";
+import { VisualPageBuilder } from "@/components/page/visual/VisualPageBuilder";
 import {
   newBlockId,
   type PageBlock,
@@ -41,7 +24,7 @@ function makeBlock(type: PageBlockType): PageBlock {
         headline: "Your headline here",
         headlineMuted: "",
         body: "",
-        primaryCta: { label: "Start a conversation", href: "#contact" },
+        primaryCta: { label: "Start a conversation", href: "/connect" },
         height: "tall",
       };
     case "editorial_intro":
@@ -84,18 +67,8 @@ function makeBlock(type: PageBlockType): PageBlock {
         title: "How it works",
         body: "",
         steps: [
-          {
-            id: newBlockId("step"),
-            number: "01",
-            title: "Step one",
-            body: "",
-          },
-          {
-            id: newBlockId("step"),
-            number: "02",
-            title: "Step two",
-            body: "",
-          },
+          { id: newBlockId("step"), number: "01", title: "Step one", body: "" },
+          { id: newBlockId("step"), number: "02", title: "Step two", body: "" },
         ],
       };
     case "testimonial":
@@ -109,7 +82,7 @@ function makeBlock(type: PageBlockType): PageBlock {
         id: newBlockId("cta"),
         type: "cta_split",
         title: "Let’s plan something together",
-        cta: { label: "Start a conversation", href: "#contact" },
+        cta: { label: "Start a conversation", href: "/connect" },
       };
     case "rich_text":
       return {
@@ -127,11 +100,7 @@ function makeBlock(type: PageBlockType): PageBlock {
         maxWidth: "normal",
       };
     case "spacer":
-      return {
-        id: newBlockId("spacer"),
-        type: "spacer",
-        size: "medium",
-      };
+      return { id: newBlockId("spacer"), type: "spacer", size: "medium" };
     case "intake_form":
       return {
         id: newBlockId("form"),
@@ -151,7 +120,6 @@ function makeBlock(type: PageBlockType): PageBlock {
 function duplicateBlock(b: PageBlock): PageBlock {
   const copy = JSON.parse(JSON.stringify(b)) as PageBlock;
   copy.id = newBlockId(b.type.slice(0, 4));
-  // give nested list items fresh ids so re-order/edit doesn't alias
   if (copy.type === "feature_tiles") {
     copy.tiles = copy.tiles.map((t) => ({ ...t, id: newBlockId("tile") }));
   }
@@ -178,66 +146,62 @@ export function PageBuilderClient({
   const [schema, setSchema] = useState<PageSchema>(initialSchema);
   const [label, setLabel] = useState(versionLabel ?? "");
   const [err, setErr] = useState<string | null>(null);
-  const [tab, setTab] = useState<"design" | "preview">("design");
+  const [tab, setTab] = useState<"edit" | "preview">("edit");
   const [pending, startTransition] = useTransition();
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 10 } }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
 
   const blocks = useMemo(() => schema.blocks, [schema.blocks]);
 
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
+  function patchBlock(id: string, patch: Partial<PageBlock>) {
     setSchema((s) => {
-      const oldIndex = s.blocks.findIndex((b) => b.id === active.id);
-      const newIndex = s.blocks.findIndex((b) => b.id === over.id);
-      if (oldIndex < 0 || newIndex < 0) return s;
-      return { ...s, blocks: arrayMove(s.blocks, oldIndex, newIndex) };
-    });
-  }
-
-  function addBlock(type: PageBlockType) {
-    setSchema((s) => ({ ...s, blocks: [...s.blocks, makeBlock(type)] }));
-    setTab("design");
-  }
-
-  function patchBlock(idx: number, patch: Partial<PageBlock>) {
-    setSchema((s) => {
+      const idx = s.blocks.findIndex((b) => b.id === id);
+      if (idx < 0) return s;
       const copy = [...s.blocks];
-      const cur = copy[idx];
-      if (!cur) return s;
-      copy[idx] = { ...cur, ...patch } as PageBlock;
+      copy[idx] = { ...copy[idx]!, ...patch } as PageBlock;
       return { ...s, blocks: copy };
     });
   }
 
-  function remove(idx: number) {
-    setSchema((s) => ({ ...s, blocks: s.blocks.filter((_, i) => i !== idx) }));
+  function removeBlock(id: string) {
+    setSchema((s) => ({ ...s, blocks: s.blocks.filter((b) => b.id !== id) }));
   }
 
-  function duplicate(idx: number) {
+  function duplicateBlockById(id: string) {
     setSchema((s) => {
-      const target = s.blocks[idx];
-      if (!target) return s;
+      const idx = s.blocks.findIndex((b) => b.id === id);
+      if (idx < 0) return s;
       const copy = [...s.blocks];
-      copy.splice(idx + 1, 0, duplicateBlock(target));
+      copy.splice(idx + 1, 0, duplicateBlock(copy[idx]!));
       return { ...s, blocks: copy };
     });
   }
 
-  function move(idx: number, dir: -1 | 1) {
-    const next = idx + dir;
-    if (next < 0 || next >= blocks.length) return;
+  function moveBlock(id: string, dir: -1 | 1) {
     setSchema((s) => {
+      const idx = s.blocks.findIndex((b) => b.id === id);
+      const next = idx + dir;
+      if (idx < 0 || next < 0 || next >= s.blocks.length) return s;
       const copy = [...s.blocks];
       const tmp = copy[idx]!;
       copy[idx] = copy[next]!;
       copy[next] = tmp;
+      return { ...s, blocks: copy };
+    });
+  }
+
+  function reorderBlocks(oldIndex: number, newIndex: number) {
+    setSchema((s) => {
+      const copy = [...s.blocks];
+      const [moved] = copy.splice(oldIndex, 1);
+      if (!moved) return s;
+      copy.splice(newIndex, 0, moved);
+      return { ...s, blocks: copy };
+    });
+  }
+
+  function insertAt(index: number, type: PageBlockType) {
+    setSchema((s) => {
+      const copy = [...s.blocks];
+      copy.splice(index, 0, makeBlock(type));
       return { ...s, blocks: copy };
     });
   }
@@ -293,7 +257,14 @@ export function PageBuilderClient({
       ) : null}
 
       <div className="rounded-2xl border border-line bg-gradient-to-b from-white to-canvas/80 p-6 shadow-sm">
-        <div className="flex flex-wrap items-end gap-4">
+        <p className="max-w-2xl text-sm leading-relaxed text-ink-muted">
+          <strong>Hover any section</strong> to drag it, duplicate it, or remove
+          it. <strong>Click any text or image</strong> to edit it in place. Use
+          the <strong>+ Add block</strong> spacers to drop in something new.
+          Nothing is saved until you hit <strong>Save</strong> or{" "}
+          <strong>Publish</strong>.
+        </p>
+        <div className="mt-5 flex flex-wrap items-end gap-4">
           <div>
             <label className="block text-sm font-semibold text-ink">
               Version name{" "}
@@ -336,14 +307,14 @@ export function PageBuilderClient({
       <div className="flex flex-wrap gap-2 rounded-full border border-line bg-white p-1 shadow-sm">
         <button
           type="button"
-          onClick={() => setTab("design")}
+          onClick={() => setTab("edit")}
           className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
-            tab === "design"
+            tab === "edit"
               ? "bg-ink text-canvas shadow"
               : "text-ink-muted hover:text-ink"
           }`}
         >
-          Design
+          Edit page
         </button>
         <button
           type="button"
@@ -359,66 +330,22 @@ export function PageBuilderClient({
       </div>
 
       {tab === "preview" ? (
-        <div className="rounded-2xl border border-line bg-white shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
           <div className="border-b border-line bg-amber-50 px-4 py-2 text-xs font-semibold text-amber-950">
             Preview — this is how the live page will look after you Publish.
           </div>
-          <div className="overflow-hidden">
-            <PageRenderer schema={schema} />
-          </div>
+          <PageRenderer schema={schema} />
         </div>
       ) : (
-        <>
-          <PageBlockPicker onPick={addBlock} />
-
-          {blocks.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-line bg-canvas/40 px-6 py-10 text-center text-sm text-ink-muted">
-              No blocks yet. Tap <strong>Add a block</strong> above to start —
-              usually a <strong>Hero</strong> is first.
-            </p>
-          ) : (
-            <>
-              <p className="text-sm text-ink-muted">
-                <strong>Tip:</strong> Drag the{" "}
-                <span className="inline-block rounded border border-line bg-white px-1">
-                  ⋮⋮
-                </span>{" "}
-                handle to reorder blocks. Your changes are not saved until you
-                hit <strong>Save</strong> or <strong>Publish</strong>.
-              </p>
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-              >
-                <SortableContext
-                  items={blocks.map((b) => b.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <ul className="space-y-5">
-                    {blocks.map((block, idx) => (
-                      <FormBuilderSortableRow key={block.id} id={block.id}>
-                        {(dragProps) => (
-                          <PageBlockCard
-                            block={block}
-                            index={idx}
-                            total={blocks.length}
-                            dragProps={dragProps}
-                            onPatch={(patch) => patchBlock(idx, patch)}
-                            onRemove={() => remove(idx)}
-                            onDuplicate={() => duplicate(idx)}
-                            onMoveUp={() => move(idx, -1)}
-                            onMoveDown={() => move(idx, 1)}
-                          />
-                        )}
-                      </FormBuilderSortableRow>
-                    ))}
-                  </ul>
-                </SortableContext>
-              </DndContext>
-            </>
-          )}
-        </>
+        <VisualPageBuilder
+          blocks={blocks}
+          onReorder={reorderBlocks}
+          onPatch={patchBlock}
+          onRemove={removeBlock}
+          onDuplicate={duplicateBlockById}
+          onMove={moveBlock}
+          onInsertAt={insertAt}
+        />
       )}
     </div>
   );

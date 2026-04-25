@@ -116,7 +116,7 @@ export function PageBlockCard({
   );
 }
 
-function BlockEditor({
+export function BlockEditor({
   block,
   onPatch,
 }: {
