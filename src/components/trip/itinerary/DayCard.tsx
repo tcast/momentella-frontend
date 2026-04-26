@@ -15,7 +15,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { type HTMLAttributes } from "react";
+import { useState, type HTMLAttributes } from "react";
 import {
   formatDayDate,
   newItem,
@@ -55,6 +55,11 @@ export function DayCard({
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   );
 
+  // Tracks the most recent item added in this day so its <ItemCard /> mounts
+  // with the editor expanded. ItemCard's useState reads this once on mount,
+  // so existing cards aren't disturbed when the value changes.
+  const [recentlyAddedId, setRecentlyAddedId] = useState<string | null>(null);
+
   function patchItem(itemId: string, patch: Partial<ItineraryItem>) {
     onPatch({
       items: day.items.map((i) =>
@@ -78,7 +83,9 @@ export function DayCard({
     onPatch({ items: next });
   }
   function addItem(kind: ItemKind) {
-    onPatch({ items: [...day.items, newItem(kind)] });
+    const fresh = newItem(kind);
+    setRecentlyAddedId(fresh.id);
+    onPatch({ items: [...day.items, fresh] });
   }
   function handleItemDragEnd(e: DragEndEvent) {
     const { active, over } = e;
@@ -206,6 +213,7 @@ export function DayCard({
                   <ItemCard
                     key={item.id}
                     item={item}
+                    defaultOpen={item.id === recentlyAddedId}
                     onPatch={(p) => patchItem(item.id, p)}
                     onRemove={() => removeItem(item.id)}
                     onDuplicate={() => duplicateItem(item.id)}

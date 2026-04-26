@@ -18,11 +18,14 @@ export function ItemCard({
   onPatch,
   onRemove,
   onDuplicate,
+  defaultOpen = false,
 }: {
   item: ItineraryItem;
   onPatch: (patch: Partial<ItineraryItem>) => void;
   onRemove: () => void;
   onDuplicate: () => void;
+  /** Used when an item was just added — opens its editor automatically. */
+  defaultOpen?: boolean;
 }) {
   const sortable = useSortable({ id: item.id });
   const dragProps = {
@@ -30,7 +33,9 @@ export function ItemCard({
     ...sortable.listeners,
   } as HTMLAttributes<HTMLButtonElement>;
 
-  const [open, setOpen] = useState(false);
+  // useState reads the initial value once on mount, so a freshly-added card
+  // opens by default while existing cards keep whatever state they had.
+  const [open, setOpen] = useState(defaultOpen);
   const time = formatTimeRange(item.startTime, item.endTime);
 
   return (
@@ -55,22 +60,42 @@ export function ItemCard({
             <path d="M8 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm10-12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0z" />
           </svg>
         </button>
-        <ItemKindBadge kind={item.kind} />
+        <button
+          type="button"
+          aria-label={open ? "Collapse details" : "Expand details"}
+          onClick={() => setOpen((v) => !v)}
+          className="shrink-0"
+        >
+          <ItemKindBadge kind={item.kind} />
+        </button>
         <div className="min-w-0 flex-1">
+          {/* Focusing the title also opens the full editor below — gives
+              admins a single-tap path to the form without losing the
+              quick-rename inline behavior. */}
           <input
             value={item.title}
             onChange={(e) => onPatch({ title: e.target.value })}
+            onFocus={() => setOpen(true)}
             placeholder="Title"
-            className="w-full rounded bg-transparent text-base font-semibold text-ink outline-none focus:bg-canvas focus:px-1.5"
+            className="w-full cursor-text rounded bg-transparent text-base font-semibold text-ink outline-none focus:bg-canvas focus:px-1.5"
           />
-          <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-ink-muted">
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            className="mt-0.5 flex w-full flex-wrap items-center gap-x-3 gap-y-0.5 text-left text-xs text-ink-muted hover:text-ink"
+          >
             {time ? <span>🕒 {time}</span> : null}
             {item.location ? <span>📍 {item.location}</span> : null}
             {item.vendorName ? <span>· {item.vendorName}</span> : null}
             {item.bookedBy ? (
               <BookedByBadge value={item.bookedBy} />
             ) : null}
-          </div>
+            {!time && !item.location && !item.vendorName && !item.bookedBy ? (
+              <span className="italic text-ink-muted/70">
+                {open ? "Editing…" : "Tap to edit details"}
+              </span>
+            ) : null}
+          </button>
         </div>
         <div className="flex shrink-0 gap-1">
           <button
