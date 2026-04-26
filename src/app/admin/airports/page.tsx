@@ -36,7 +36,7 @@ export default async function AdminAirportsPage() {
         </h2>
         <p className="mt-1 max-w-2xl text-sm text-ink-muted">
           This is the list guests see when you use a <strong>Home airport</strong>{" "}
-          question on an intake form. Add any missing ones, correct spellings, or
+          question on a form. Add any missing ones, correct spellings, or
           turn off airports you don’t want offered. Guests can search by city
           name, airport name, or 3-letter code.
         </p>

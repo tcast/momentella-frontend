@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AdminNav } from "@/components/admin/AdminNav";
 import { SiteHeader } from "@/components/SiteHeader";
 
 export const metadata: Metadata = {
@@ -29,32 +30,7 @@ export default function AdminLayout({
             Security &amp; 2FA
           </Link>
         </div>
-        <nav className="mb-10 flex flex-wrap gap-6 border-b border-line pb-4 text-sm font-semibold text-ink-muted">
-          <Link className="hover:text-ink" href="/admin">
-            Overview
-          </Link>
-          <Link className="hover:text-ink" href="/admin/users">
-            Users
-          </Link>
-          <Link className="hover:text-ink" href="/admin/pages">
-            Pages
-          </Link>
-          <Link className="hover:text-ink" href="/admin/trips">
-            Trips
-          </Link>
-          <Link className="hover:text-ink" href="/admin/intake">
-            Trip intakes
-          </Link>
-          <Link className="hover:text-ink" href="/admin/intake/submissions">
-            Submissions
-          </Link>
-          <Link className="hover:text-ink" href="/admin/airports">
-            Airports
-          </Link>
-          <Link className="hover:text-ink" href="/admin/destinations">
-            Destinations
-          </Link>
-        </nav>
+        <AdminNav />
         {children}
       </main>
     </>

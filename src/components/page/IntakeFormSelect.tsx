@@ -32,7 +32,7 @@ export function IntakeFormSelect({
         );
         if (!res.ok) {
           if (!cancelled) {
-            setErr("Could not load your intake forms");
+            setErr("Could not load your forms");
             setLoaded(true);
           }
           return;
@@ -75,7 +75,7 @@ export function IntakeFormSelect({
   return (
     <div className="space-y-2">
       <label className="block text-xs font-semibold text-ink-muted">
-        Which intake form should appear here?
+        Which form should appear here?
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -101,14 +101,14 @@ export function IntakeFormSelect({
         <p className="text-xs text-red-800">{err}</p>
       ) : options.length === 0 && loaded ? (
         <p className="text-xs text-ink-muted">
-          You don’t have any intake forms yet. Create one under{" "}
-          <strong>Trip intakes</strong> first, publish it, and it’ll show up
+          You don’t have any forms yet. Create one under{" "}
+          <strong>Forms</strong> first, publish it, and it’ll show up
           here.
         </p>
       ) : (
         <p className="text-xs text-ink-muted">
           Only forms with a published version can be embedded. Manage forms
-          under <strong>Trip intakes</strong>.
+          under <strong>Forms</strong>.
         </p>
       )}
     </div>

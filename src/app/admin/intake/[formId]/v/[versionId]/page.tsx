@@ -44,7 +44,7 @@ export default async function IntakeVersionBuilderPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-3 text-sm text-ink-muted">
         <Link href="/admin/intake" className="hover:text-ink">
-          Trip intakes
+          Forms
         </Link>
         <span>/</span>
         <Link href={`/admin/intake/${formId}`} className="hover:text-ink">

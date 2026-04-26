@@ -49,7 +49,7 @@ export default async function AdminPage() {
             ["Users", overview.users],
             ["Trips", overview.trips],
             ["Booking requests", overview.bookingRequests],
-            ["Intake submissions", overview.intakeSubmissions ?? 0],
+            ["Form submissions", overview.intakeSubmissions ?? 0],
           ].map(([label, n]) => (
             <div
               key={String(label)}

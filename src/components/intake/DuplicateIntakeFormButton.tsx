@@ -65,7 +65,7 @@ export function DuplicateIntakeFormButton({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4">
           <div className="w-full max-w-md rounded-2xl border border-line bg-canvas p-6 shadow-xl">
             <h4 className="font-display text-lg font-semibold text-ink">
-              Duplicate intake form
+              Duplicate form
             </h4>
             <p className="mt-2 text-sm text-ink-muted">
               Copies all versions; the published flag follows the source form.

@@ -76,7 +76,7 @@ export function IntakeFormBlockView({
           <strong>Form not configured.</strong>{" "}
           {slug ? (
             <>
-              No published intake form found for slug{" "}
+              No published form found for slug{" "}
               <code className="rounded bg-white px-1 font-mono text-xs">
                 {slug}
               </code>

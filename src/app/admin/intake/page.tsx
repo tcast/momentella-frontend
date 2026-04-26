@@ -25,7 +25,7 @@ export default async function AdminIntakeIndexPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="font-display text-2xl font-semibold text-ink">
-            Trip intake forms
+            Forms
           </h2>
           <p className="mt-1 text-sm text-ink-muted">
             Build versioned questionnaires. The published version is shown at{" "}
@@ -37,7 +37,7 @@ export default async function AdminIntakeIndexPage() {
 
       {forms.length === 0 ? (
         <p className="text-sm text-ink-muted">
-          No intake forms yet. Create one to get started.
+          No forms yet. Create one to get started.
         </p>
       ) : (
         <ul className="divide-y divide-line rounded-xl border border-line bg-white/60">
@@ -79,7 +79,7 @@ export default async function AdminIntakeIndexPage() {
           Submissions
         </h3>
         <p className="mt-1 text-sm text-ink-muted">
-          Review responses from all intake forms.
+          Review responses from all forms.
         </p>
         <Link
           href="/admin/intake/submissions"

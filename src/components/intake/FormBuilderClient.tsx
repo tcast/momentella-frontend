@@ -253,7 +253,7 @@ export function FormBuilderClient({
 
       <div className="rounded-2xl border border-line bg-gradient-to-b from-white to-canvas/80 p-6 shadow-sm">
         <h2 className="font-display text-xl font-semibold text-ink">
-          Build your intake form
+          Build your form
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted">
           Add questions in plain language. Drag the grip icon to change order. Use{" "}

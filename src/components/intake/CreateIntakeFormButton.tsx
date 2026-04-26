@@ -54,13 +54,13 @@ export function CreateIntakeFormButton() {
         onClick={() => setOpen(true)}
         className="rounded-full bg-ink px-5 py-2 text-sm font-semibold text-canvas hover:bg-accent-deep"
       >
-        New intake form
+        New form
       </button>
       {open ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4">
           <div className="w-full max-w-md rounded-2xl border border-line bg-canvas p-6 shadow-xl">
             <h4 className="font-display text-lg font-semibold text-ink">
-              New intake form
+              New form
             </h4>
             <label className="mt-4 block text-xs font-semibold uppercase text-ink-muted">
               URL slug

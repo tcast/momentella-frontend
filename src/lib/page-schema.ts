@@ -156,7 +156,7 @@ export const BLOCK_LABELS: Record<PageBlockType, string> = {
   rich_text: "Paragraph block",
   image: "Single image + caption",
   spacer: "Vertical spacer",
-  intake_form: "Intake form",
+  intake_form: "Form",
 };
 
 export const BLOCK_DESCRIPTIONS: Record<PageBlockType, string> = {
@@ -171,5 +171,5 @@ export const BLOCK_DESCRIPTIONS: Record<PageBlockType, string> = {
   image: "One image with an optional caption.",
   spacer: "Adds breathing room between blocks.",
   intake_form:
-    "Drops a trip intake form right on this page — pick which form to show.",
+    "Drops a form right on this page — pick which form to show.",
 };

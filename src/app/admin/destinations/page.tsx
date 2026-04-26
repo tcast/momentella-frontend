@@ -35,7 +35,7 @@ export default async function AdminDestinationsPage() {
         </h2>
         <p className="mt-1 max-w-2xl text-sm text-ink-muted">
           This is the catalog guests see when you use a{" "}
-          <strong>Destination picker</strong> on an intake form. Add any missing
+          <strong>Destination picker</strong> on a form. Add any missing
           places — a city, a country, a theme park, a resort, anything you sell.
           Aliases help search (e.g. add <strong>WDW, Disney</strong> to “Walt
           Disney World”).

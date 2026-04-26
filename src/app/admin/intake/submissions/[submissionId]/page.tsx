@@ -54,10 +54,10 @@ export default async function IntakeSubmissionDetailPage({
           href="/admin/intake/submissions"
           className="text-sm font-semibold text-accent hover:underline"
         >
-          ← All submissions
+          ← All form submissions
         </Link>
         <h2 className="mt-4 font-display text-2xl font-semibold text-ink">
-          Intake submission
+          Form submission
         </h2>
         <p className="mt-2 text-sm text-ink-muted">
           {new Date(submission.createdAt).toLocaleString()} · {submission.email}

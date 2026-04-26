@@ -50,10 +50,10 @@ export default async function IntakeSubmissionsPage() {
           href="/admin/intake"
           className="text-sm font-semibold text-accent hover:underline"
         >
-          ← Trip intakes
+          ← Forms
         </Link>
         <h2 className="mt-4 font-display text-2xl font-semibold text-ink">
-          Intake submissions
+          Form submissions
         </h2>
         <p className="mt-1 text-sm text-ink-muted">
           Latest {submissions.length} submissions across all forms. Click{" "}
