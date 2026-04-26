@@ -5,6 +5,14 @@ import {
   MessageThread,
   type MessageEntry,
 } from "@/components/trip/MessageThread";
+import {
+  ClientBookingsCard,
+  type ClientBooking,
+} from "@/components/trip/ClientBookingsCard";
+import {
+  ClientDocumentsCard,
+  type ClientDocument,
+} from "@/components/trip/ClientDocumentsCard";
 import { ProposalRespondActions } from "@/components/trip/ProposalRespondActions";
 import {
   parseProposalSchema,
@@ -50,6 +58,8 @@ type Trip = {
   homeAirportIata: string | null;
   proposals: ClientProposal[];
   messages: MessageEntry[];
+  bookings: ClientBooking[];
+  documents: ClientDocument[];
 };
 
 export default async function ClientTripDetailPage({
@@ -176,6 +186,10 @@ export default async function ClientTripDetailPage({
           </p>
         </div>
       )}
+
+      <ClientBookingsCard bookings={trip.bookings} />
+
+      <ClientDocumentsCard documents={trip.documents} />
 
       <MessageThread
         tripId={trip.id}

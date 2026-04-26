@@ -10,6 +10,14 @@ import {
   type MessageEntry,
 } from "@/components/trip/MessageThread";
 import {
+  BookingsSection,
+  type AdminBooking,
+} from "@/components/trip/BookingsSection";
+import {
+  DocumentsSection,
+  type AdminDocument,
+} from "@/components/trip/DocumentsSection";
+import {
   ProposalHistory,
   type ProposalSummary,
 } from "@/components/trip/ProposalHistory";
@@ -46,6 +54,8 @@ export type AdminTrip = {
   notes: NoteEntry[];
   proposals: ProposalSummary[];
   messages: MessageEntry[];
+  bookings: AdminBooking[];
+  documents: AdminDocument[];
   createdAt: string;
   updatedAt: string;
 };
@@ -129,6 +139,18 @@ export default async function AdminTripDetailPage({
       </div>
 
       <TripDetailClient trip={trip} />
+
+      <BookingsSection tripId={trip.id} bookings={trip.bookings} />
+
+      <DocumentsSection
+        tripId={trip.id}
+        documents={trip.documents}
+        bookings={trip.bookings.map((b) => ({
+          id: b.id,
+          title: b.title,
+          kind: b.kind,
+        }))}
+      />
 
       <ProposalHistory tripId={trip.id} proposals={trip.proposals} />
 
