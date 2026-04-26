@@ -47,7 +47,10 @@ export function OptionListEditor({
       </div>
       <ul className="space-y-2">
         {options.map((o, i) => (
-          <li key={`${o.value}-${i}`} className="flex gap-2">
+          // Stable index-based key. Using `o.value` here would change on
+          // every keystroke (the value is auto-slugged from the label),
+          // which remounts the input and steals focus mid-typing.
+          <li key={i} className="flex gap-2">
             <input
               type="text"
               value={o.label}

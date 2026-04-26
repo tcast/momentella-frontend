@@ -1,8 +1,62 @@
 "use client";
 
-import type { HTMLAttributes } from "react";
+import { useEffect, useState, type HTMLAttributes } from "react";
 import type { FormField } from "@/lib/intake-schema";
 import { OptionListEditor } from "./OptionListEditor";
+
+/**
+ * Standalone editor for the field's internal id. The id is the dnd-kit
+ * sortable id and the React `key` on the parent SortableRow, so updating it
+ * mid-typing remounts the row and steals focus. Local state buffers keystrokes;
+ * we only commit on blur (or Enter), and only if the value actually changed
+ * and is non-empty. The `useEffect` keeps the local state in sync if the
+ * field id changes from elsewhere (e.g. another patch).
+ */
+function FieldIdInput({
+  fieldId,
+  onCommit,
+}: {
+  fieldId: string;
+  onCommit: (id: string) => void;
+}) {
+  const [draft, setDraft] = useState(fieldId);
+  useEffect(() => {
+    setDraft(fieldId);
+  }, [fieldId]);
+  function commit() {
+    const next = draft.trim();
+    if (!next || next === fieldId) {
+      setDraft(fieldId);
+      return;
+    }
+    onCommit(next);
+  }
+  return (
+    <label className="block text-xs text-ink-muted">
+      Internal field code — don’t change unless support asked you to
+      <input
+        type="text"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            (e.currentTarget as HTMLInputElement).blur();
+          }
+          if (e.key === "Escape") {
+            setDraft(fieldId);
+            (e.currentTarget as HTMLInputElement).blur();
+          }
+        }}
+        className="mt-1 w-full rounded border border-line font-mono text-xs text-ink"
+      />
+      <span className="mt-1 block text-[10px] text-ink-muted/80">
+        Saves when you click out. Submitted answers reference this code.
+      </span>
+    </label>
+  );
+}
 
 const FRIENDLY_TYPE: Record<FormField["type"], string> = {
   section: "Section heading",
@@ -291,17 +345,12 @@ export function FormBuilderQuestionCard({
           </summary>
           <div className="border-t border-line/80 px-3 py-3">
             {field.type !== "section" ? (
-              <label className="block text-xs text-ink-muted">
-                Internal field code — don’t change unless support asked you to
-                <input
-                  type="text"
-                  value={field.id}
-                  onChange={(e) =>
-                    onPatch({ id: e.target.value } as Partial<FormField>)
-                  }
-                  className="mt-1 w-full rounded border border-line font-mono text-xs text-ink"
-                />
-              </label>
+              <FieldIdInput
+                fieldId={field.id}
+                onCommit={(id) =>
+                  onPatch({ id } as Partial<FormField>)
+                }
+              />
             ) : (
               <p className="text-xs text-ink-muted">
                 Section headings don’t need a code.
