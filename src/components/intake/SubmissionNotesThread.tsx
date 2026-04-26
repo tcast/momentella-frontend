@@ -36,9 +36,17 @@ function initials(name: string | null): string {
 export function SubmissionNotesThread({
   submissionId,
   notes,
+  endpointBase,
+  title = "Internal notes",
+  helper = "Running log for your team. Guests never see these.",
 }: {
+  /** Used as the resource id; must align with whatever `endpointBase` expects. */
   submissionId: string;
   notes: NoteEntry[];
+  /** Override the default `/api/admin/intake-submissions/<id>/notes` route. */
+  endpointBase?: string;
+  title?: string;
+  helper?: string;
 }) {
   const router = useRouter();
   const [draft, setDraft] = useState("");
@@ -47,20 +55,21 @@ export function SubmissionNotesThread({
   const [editBody, setEditBody] = useState("");
   const [pending, startTransition] = useTransition();
 
+  const baseUrl =
+    endpointBase ??
+    `/api/admin/intake-submissions/${submissionId}/notes`;
+
   function addNote() {
     setErr(null);
     const body = draft.trim();
     if (!body) return;
     startTransition(async () => {
-      const res = await fetch(
-        `${getPublicAppUrl()}/api/admin/intake-submissions/${submissionId}/notes`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ body }),
-        },
-      );
+      const res = await fetch(`${getPublicAppUrl()}${baseUrl}`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body }),
+      });
       if (!res.ok) {
         const j: unknown = await res.json().catch(() => null);
         setErr(
@@ -98,15 +107,12 @@ export function SubmissionNotesThread({
       return;
     }
     startTransition(async () => {
-      const res = await fetch(
-        `${getPublicAppUrl()}/api/admin/intake-submissions/${submissionId}/notes/${n.id}`,
-        {
-          method: "PATCH",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ body }),
-        },
-      );
+      const res = await fetch(`${getPublicAppUrl()}${baseUrl}/${n.id}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body }),
+      });
       if (!res.ok) {
         setErr("Could not save note");
         return;
@@ -120,10 +126,10 @@ export function SubmissionNotesThread({
     if (!confirm("Delete this note? This can’t be undone.")) return;
     setErr(null);
     startTransition(async () => {
-      const res = await fetch(
-        `${getPublicAppUrl()}/api/admin/intake-submissions/${submissionId}/notes/${n.id}`,
-        { method: "DELETE", credentials: "include" },
-      );
+      const res = await fetch(`${getPublicAppUrl()}${baseUrl}/${n.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
       if (!res.ok) {
         setErr("Could not delete note");
         return;
@@ -137,11 +143,9 @@ export function SubmissionNotesThread({
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h3 className="font-display text-lg font-semibold text-ink">
-            Internal notes
+            {title}
           </h3>
-          <p className="text-xs text-ink-muted">
-            Running log for your team. Guests never see these.
-          </p>
+          <p className="text-xs text-ink-muted">{helper}</p>
         </div>
         <span className="text-xs text-ink-muted">
           {notes.length} note{notes.length === 1 ? "" : "s"}

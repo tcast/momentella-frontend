@@ -39,6 +39,9 @@ export default function AdminLayout({
           <Link className="hover:text-ink" href="/admin/pages">
             Pages
           </Link>
+          <Link className="hover:text-ink" href="/admin/trips">
+            Trips
+          </Link>
           <Link className="hover:text-ink" href="/admin/intake">
             Trip intakes
           </Link>

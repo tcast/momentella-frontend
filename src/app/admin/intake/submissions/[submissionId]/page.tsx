@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ConvertToTripButton } from "@/components/intake/ConvertToTripButton";
 import { IntakeResponseView } from "@/components/intake/IntakeResponseView";
 import { IntakeSubmissionActions } from "@/components/intake/IntakeSubmissionActions";
 import {
@@ -23,6 +24,7 @@ type SubmissionDetail = {
     formVersion: { version: number; label: string | null };
     client: { id: string; email: string; name: string } | null;
     notesThread: NoteEntry[];
+    convertedTrip?: { id: string; title: string; status: string } | null;
   };
   schema: IntakeFormSchema | null;
 };
@@ -83,7 +85,25 @@ export default async function IntakeSubmissionDetailPage({
             Status
           </span>
           <IntakeSubmissionActions id={submission.id} status={submission.status} />
+          <div className="ml-auto">
+            <ConvertToTripButton
+              submissionId={submission.id}
+              existingTripId={submission.convertedTrip?.id ?? null}
+            />
+          </div>
         </div>
+        {submission.convertedTrip ? (
+          <p className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-900">
+            This intake is now{" "}
+            <Link
+              href={`/admin/trips/${submission.convertedTrip.id}`}
+              className="font-semibold underline-offset-2 hover:underline"
+            >
+              Trip: {submission.convertedTrip.title}
+            </Link>
+            . All planning lives there going forward.
+          </p>
+        ) : null}
       </div>
 
       <SubmissionNotesThread
