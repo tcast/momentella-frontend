@@ -285,8 +285,21 @@ function TripRow({ trip }: { trip: Trip }) {
             </dd>
           </div>
         </dl>
-        <p className="mt-3 text-xs font-semibold text-accent">Open trip →</p>
       </Link>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Link
+          href={`/admin/trips/${trip.id}/itinerary`}
+          className="rounded-full bg-ink px-3 py-1.5 text-[11px] font-semibold text-canvas hover:bg-accent-deep"
+        >
+          Plan itinerary
+        </Link>
+        <Link
+          href={`/admin/trips/${trip.id}`}
+          className="rounded-full border border-line bg-white px-3 py-1.5 text-[11px] font-semibold text-ink hover:bg-canvas"
+        >
+          Open trip
+        </Link>
+      </div>
     </li>
   );
 }

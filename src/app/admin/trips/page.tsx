@@ -141,12 +141,20 @@ export default async function AdminTripsPage() {
                         {TRIP_KIND_LABEL[t.kind] ?? t.kind}
                       </td>
                       <td className="px-4 py-4 text-right">
-                        <Link
-                          href={`/admin/trips/${t.id}`}
-                          className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-canvas"
-                        >
-                          Open
-                        </Link>
+                        <div className="flex justify-end gap-2">
+                          <Link
+                            href={`/admin/trips/${t.id}/itinerary`}
+                            className="rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-canvas hover:bg-accent-deep"
+                          >
+                            Plan
+                          </Link>
+                          <Link
+                            href={`/admin/trips/${t.id}`}
+                            className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-canvas"
+                          >
+                            Open
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   );
