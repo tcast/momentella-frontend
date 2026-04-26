@@ -114,7 +114,7 @@ export default async function AdminTripDetailPage({
             <p className="mt-2 text-sm text-ink-muted">
               For{" "}
               <Link
-                href={`/admin/users`}
+                href={`/admin/users/${trip.client.id}`}
                 className="font-semibold text-accent hover:underline"
               >
                 {trip.client.name || trip.client.email}

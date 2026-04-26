@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { getPublicAppUrl } from "@/lib/env-public";
@@ -252,14 +253,17 @@ export function UsersAdminTable({ users }: { users: UserRow[] }) {
                         </div>
                       </div>
                     ) : (
-                      <div className="min-w-0">
-                        <p className="truncate text-base font-semibold text-ink">
+                      <Link
+                        href={`/admin/users/${u.id}`}
+                        className="min-w-0 transition hover:opacity-80"
+                      >
+                        <p className="truncate text-base font-semibold text-ink hover:underline">
                           {u.name || "—"}
                         </p>
                         <p className="truncate text-xs text-ink-muted">
                           {u.email}
                         </p>
-                      </div>
+                      </Link>
                     )}
                   </div>
                 </td>

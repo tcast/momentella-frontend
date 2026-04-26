@@ -107,14 +107,17 @@ export default async function AdminTripsPage() {
                       </td>
                       <td className="px-4 py-4">
                         {t.client ? (
-                          <>
-                            <p className="font-medium text-ink">
+                          <Link
+                            href={`/admin/users/${t.client.id}`}
+                            className="block hover:opacity-80"
+                          >
+                            <p className="font-medium text-ink hover:underline">
                               {t.client.name || "—"}
                             </p>
                             <p className="text-xs text-ink-muted">
                               {t.client.email}
                             </p>
-                          </>
+                          </Link>
                         ) : (
                           <span className="text-ink-muted">—</span>
                         )}
