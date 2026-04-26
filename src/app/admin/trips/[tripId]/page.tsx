@@ -71,6 +71,12 @@ export default async function AdminTripDetailPage({
               {TRIP_KIND_LABEL[trip.kind] ?? trip.kind}
             </span>
           </div>
+          <Link
+            href={`/admin/trips/${trip.id}/itinerary`}
+            className="mt-3 inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-xs font-semibold text-canvas hover:bg-accent-deep"
+          >
+            Open itinerary builder →
+          </Link>
           {trip.client ? (
             <p className="mt-2 text-sm text-ink-muted">
               For{" "}

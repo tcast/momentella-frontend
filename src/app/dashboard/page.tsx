@@ -116,7 +116,8 @@ function TripCard({ trip }: { trip: Trip }) {
     trip.partyChildAges,
   );
   return (
-    <li className="rounded-2xl border border-line bg-white/70 p-5 shadow-sm">
+    <li className="rounded-2xl border border-line bg-white/70 p-5 shadow-sm transition hover:border-accent/50 hover:shadow-md">
+      <Link href={`/dashboard/trips/${trip.id}`} className="block">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <p className="font-display text-lg font-semibold text-ink">
           {trip.title}
@@ -150,6 +151,8 @@ function TripCard({ trip }: { trip: Trip }) {
           <dd className="inline">{TRIP_KIND_LABEL[trip.kind] ?? trip.kind}</dd>
         </div>
       </dl>
+      <p className="mt-3 text-xs font-semibold text-accent">View itinerary →</p>
+      </Link>
     </li>
   );
 }
