@@ -1,7 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ItineraryRenderer } from "@/components/trip/itinerary/ItineraryRenderer";
-import { parseItinerarySchema } from "@/lib/itinerary-schema";
+import {
+  MessageThread,
+  type MessageEntry,
+} from "@/components/trip/MessageThread";
+import { ProposalRespondActions } from "@/components/trip/ProposalRespondActions";
+import {
+  parseProposalSchema,
+  PROPOSAL_STATUS_COLOR,
+  PROPOSAL_STATUS_LABEL,
+} from "@/lib/proposal-schema";
 import { serverFetchJson } from "@/lib/server-fetch";
 import {
   formatDateRange,
@@ -12,6 +21,19 @@ import {
 } from "@/lib/trip-display";
 
 export const dynamic = "force-dynamic";
+
+type ClientProposal = {
+  id: string;
+  version: number;
+  status: string;
+  message: string | null;
+  schema: unknown;
+  publishedByName: string | null;
+  respondedAt: string | null;
+  responderName: string | null;
+  responseNote: string | null;
+  createdAt: string;
+};
 
 type Trip = {
   id: string;
@@ -26,7 +48,8 @@ type Trip = {
   partyChildren: number | null;
   partyChildAges: unknown;
   homeAirportIata: string | null;
-  itinerarySchema: unknown;
+  proposals: ClientProposal[];
+  messages: MessageEntry[];
 };
 
 export default async function ClientTripDetailPage({
@@ -40,11 +63,15 @@ export default async function ClientTripDetailPage({
   );
   if (!data?.trip) notFound();
   const trip = data.trip;
-  const itin = parseItinerarySchema(trip.itinerarySchema);
+  const latest = trip.proposals[0];
+  const snapshot = latest ? parseProposalSchema(latest.schema) : null;
   const badge = tripStatusBadge(trip.status);
+  const proposalBadge = latest
+    ? PROPOSAL_STATUS_COLOR[latest.status] ?? "bg-stone-100 text-stone-800"
+    : "";
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <div>
         <Link
           href="/dashboard"
@@ -91,18 +118,71 @@ export default async function ClientTripDetailPage({
         </dl>
       </div>
 
-      <section>
-        {itin ? (
-          <ItineraryRenderer schema={itin} tripTitle={trip.title} />
-        ) : (
-          <div className="rounded-2xl border border-dashed border-line bg-canvas/40 px-6 py-12 text-center text-sm text-ink-muted">
-            <p>Your trip designer is putting the days together.</p>
-            <p className="mt-1">
-              You’ll see the day-by-day itinerary right here once it’s ready.
+      {latest ? (
+        <section className="space-y-4">
+          <header className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
+                Proposal v{latest.version}
+              </p>
+              <h3 className="mt-1 font-display text-xl font-medium text-ink">
+                {latest.status === "SENT"
+                  ? "Take a look — your designer just sent this"
+                  : "Latest version of your trip"}
+                <span
+                  className={`ml-2 rounded-full px-2 py-0.5 text-[11px] font-semibold ${proposalBadge}`}
+                >
+                  {PROPOSAL_STATUS_LABEL[latest.status] ?? latest.status}
+                </span>
+              </h3>
+              <p className="mt-1 text-xs text-ink-muted">
+                Sent {new Date(latest.createdAt).toLocaleString()}
+                {latest.publishedByName ? ` by ${latest.publishedByName}` : ""}
+              </p>
+            </div>
+          </header>
+
+          {latest.message ? (
+            <p className="rounded-2xl border border-line bg-canvas/50 px-5 py-4 text-sm leading-relaxed text-ink">
+              <span className="font-display text-base font-semibold text-ink">
+                A note from your designer:
+              </span>
+              <br />
+              {latest.message}
             </p>
-          </div>
-        )}
-      </section>
+          ) : null}
+
+          <ProposalRespondActions
+            tripId={trip.id}
+            proposalId={latest.id}
+            status={latest.status}
+          />
+
+          {snapshot ? (
+            <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
+              <ItineraryRenderer
+                schema={snapshot.itinerary}
+                tripTitle={snapshot.trip.title}
+              />
+            </div>
+          ) : null}
+        </section>
+      ) : (
+        <div className="rounded-2xl border border-dashed border-line bg-canvas/40 px-6 py-12 text-center text-sm text-ink-muted">
+          <p>Your trip designer is putting the days together.</p>
+          <p className="mt-1">
+            You’ll see the day-by-day proposal right here once it’s ready —
+            we’ll also send a note in the messages below.
+          </p>
+        </div>
+      )}
+
+      <MessageThread
+        tripId={trip.id}
+        messages={trip.messages}
+        endpointBase={`/api/client/trips/${trip.id}/messages`}
+        meRole="client"
+      />
     </div>
   );
 }

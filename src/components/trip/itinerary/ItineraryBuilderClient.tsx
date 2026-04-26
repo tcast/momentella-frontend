@@ -27,6 +27,7 @@ import {
   type ItinerarySchema,
 } from "@/lib/itinerary-schema";
 import { getPublicAppUrl } from "@/lib/env-public";
+import { PublishProposalButton } from "@/components/trip/PublishProposalButton";
 import { DayCard } from "./DayCard";
 import { ItineraryRenderer } from "./ItineraryRenderer";
 
@@ -35,11 +36,13 @@ export function ItineraryBuilderClient({
   tripTitle,
   startsOn,
   initialSchema,
+  latestProposalVersion,
 }: {
   tripId: string;
   tripTitle: string;
   startsOn: string | null;
   initialSchema: ItinerarySchema | null;
+  latestProposalVersion: number | null;
 }) {
   const router = useRouter();
   const [schema, setSchema] = useState<ItinerarySchema>(
@@ -182,7 +185,7 @@ export function ItineraryBuilderClient({
             type="button"
             onClick={save}
             disabled={pending}
-            className="ml-auto rounded-full bg-ink px-5 py-2 text-sm font-semibold text-canvas hover:bg-accent-deep disabled:opacity-60"
+            className="ml-auto rounded-full border border-line bg-white px-5 py-2 text-sm font-semibold text-ink hover:bg-canvas disabled:opacity-60"
           >
             {pending ? "Saving…" : "Save itinerary"}
           </button>
@@ -191,6 +194,11 @@ export function ItineraryBuilderClient({
               Saved {new Date(savedAt).toLocaleTimeString()}
             </span>
           ) : null}
+          <PublishProposalButton
+            tripId={tripId}
+            hasItinerary={days.length > 0}
+            latestVersion={latestProposalVersion}
+          />
         </div>
         {err ? (
           <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">

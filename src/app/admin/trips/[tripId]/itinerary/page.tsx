@@ -11,6 +11,7 @@ type Trip = {
   title: string;
   startsOn: string | null;
   itinerarySchema: unknown;
+  proposals: { version: number }[];
 };
 
 export default async function AdminTripItineraryPage({
@@ -50,6 +51,7 @@ export default async function AdminTripItineraryPage({
         tripTitle={trip.title}
         startsOn={trip.startsOn}
         initialSchema={schema}
+        latestProposalVersion={trip.proposals[0]?.version ?? null}
       />
     </div>
   );

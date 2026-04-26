@@ -5,6 +5,16 @@ import {
   type NoteEntry,
   SubmissionNotesThread,
 } from "@/components/intake/SubmissionNotesThread";
+import {
+  MessageThread,
+  type MessageEntry,
+} from "@/components/trip/MessageThread";
+import {
+  ProposalHistory,
+  type ProposalSummary,
+} from "@/components/trip/ProposalHistory";
+import { PublishProposalButton } from "@/components/trip/PublishProposalButton";
+import { parseItinerarySchema } from "@/lib/itinerary-schema";
 import { serverFetchJson } from "@/lib/server-fetch";
 import { tripStatusBadge, TRIP_KIND_LABEL } from "@/lib/trip-display";
 
@@ -25,6 +35,7 @@ export type AdminTrip = {
   partyChildAges: unknown;
   budgetTier: string | null;
   destinations: unknown;
+  itinerarySchema: unknown;
   client: { id: string; name: string; email: string } | null;
   originIntakeSubmission: {
     id: string;
@@ -33,6 +44,8 @@ export type AdminTrip = {
     email: string;
   } | null;
   notes: NoteEntry[];
+  proposals: ProposalSummary[];
+  messages: MessageEntry[];
   createdAt: string;
   updatedAt: string;
 };
@@ -71,12 +84,22 @@ export default async function AdminTripDetailPage({
               {TRIP_KIND_LABEL[trip.kind] ?? trip.kind}
             </span>
           </div>
-          <Link
-            href={`/admin/trips/${trip.id}/itinerary`}
-            className="mt-3 inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-xs font-semibold text-canvas hover:bg-accent-deep"
-          >
-            Open itinerary builder →
-          </Link>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Link
+              href={`/admin/trips/${trip.id}/itinerary`}
+              className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-xs font-semibold text-ink hover:bg-canvas"
+            >
+              Open itinerary builder →
+            </Link>
+            <PublishProposalButton
+              tripId={trip.id}
+              hasItinerary={
+                !!parseItinerarySchema(trip.itinerarySchema) &&
+                (parseItinerarySchema(trip.itinerarySchema)?.days.length ?? 0) > 0
+              }
+              latestVersion={trip.proposals[0]?.version ?? null}
+            />
+          </div>
           {trip.client ? (
             <p className="mt-2 text-sm text-ink-muted">
               For{" "}
@@ -106,6 +129,15 @@ export default async function AdminTripDetailPage({
       </div>
 
       <TripDetailClient trip={trip} />
+
+      <ProposalHistory tripId={trip.id} proposals={trip.proposals} />
+
+      <MessageThread
+        tripId={trip.id}
+        messages={trip.messages}
+        endpointBase={`/api/admin/trips/${trip.id}/messages`}
+        meRole="admin"
+      />
 
       <SubmissionNotesThread
         submissionId={trip.id}
