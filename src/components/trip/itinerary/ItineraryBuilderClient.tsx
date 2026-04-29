@@ -37,12 +37,14 @@ export function ItineraryBuilderClient({
   startsOn,
   initialSchema,
   latestProposalVersion,
+  itineraryDaysAllowed,
 }: {
   tripId: string;
   tripTitle: string;
   startsOn: string | null;
   initialSchema: ItinerarySchema | null;
   latestProposalVersion: number | null;
+  itineraryDaysAllowed?: number | null;
 }) {
   const router = useRouter();
   const [schema, setSchema] = useState<ItinerarySchema>(
@@ -148,6 +150,9 @@ export function ItineraryBuilderClient({
   }
 
   const totalItems = days.reduce((acc, d) => acc + d.items.length, 0);
+  const overCap =
+    typeof itineraryDaysAllowed === "number" &&
+    days.length > itineraryDaysAllowed;
 
   return (
     <div className="space-y-6">
@@ -162,9 +167,17 @@ export function ItineraryBuilderClient({
           <span className="text-xs font-semibold text-ink-muted">
             {schema.version === ITINERARY_SCHEMA_VERSION ? null : null}
             {days.length} day{days.length === 1 ? "" : "s"}
+            {typeof itineraryDaysAllowed === "number"
+              ? ` of ${itineraryDaysAllowed} purchased`
+              : ""}
             {" · "}
             {totalItems} item{totalItems === 1 ? "" : "s"}
           </span>
+          {overCap ? (
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-900">
+              Over the purchased {itineraryDaysAllowed}-day plan
+            </span>
+          ) : null}
           <button
             type="button"
             onClick={addDay}

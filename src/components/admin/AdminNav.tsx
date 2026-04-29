@@ -13,12 +13,15 @@ const TOP: NavItem[] = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/users", label: "Users" },
   { href: "/admin/trips", label: "Trips" },
+  { href: "/admin/orders", label: "Orders" },
   { href: "/admin/intake", label: "Forms" },
   { href: "/admin/intake/submissions", label: "Submissions" },
 ];
 
 const EDIT_CONTENT: NavItem[] = [
   { href: "/admin/pages", label: "Pages" },
+  { href: "/admin/products", label: "Products" },
+  { href: "/admin/gift-certificates", label: "Gift certificates" },
   { href: "/admin/airports", label: "Airports" },
   { href: "/admin/destinations", label: "Destinations" },
 ];

@@ -12,6 +12,9 @@ type Trip = {
   startsOn: string | null;
   itinerarySchema: unknown;
   proposals: { version: number }[];
+  productSlug: string | null;
+  itineraryDaysAllowed: number | null;
+  fulfilledByOrderId: string | null;
 };
 
 export default async function AdminTripItineraryPage({
@@ -46,12 +49,22 @@ export default async function AdminTripItineraryPage({
       <h2 className="font-display text-2xl font-semibold text-ink">
         Itinerary builder
       </h2>
+      {trip.itineraryDaysAllowed ? (
+        <p className="rounded-xl border border-line bg-canvas/40 px-4 py-3 text-sm text-ink-muted">
+          <span className="font-semibold text-ink">
+            Purchased: {trip.itineraryDaysAllowed}-day itinerary
+          </span>{" "}
+          ({trip.productSlug ?? "—"}). Build the days the client paid for; if
+          you go beyond, the builder will warn you so the math stays honest.
+        </p>
+      ) : null}
       <ItineraryBuilderClient
         tripId={trip.id}
         tripTitle={trip.title}
         startsOn={trip.startsOn}
         initialSchema={schema}
         latestProposalVersion={trip.proposals[0]?.version ?? null}
+        itineraryDaysAllowed={trip.itineraryDaysAllowed}
       />
     </div>
   );

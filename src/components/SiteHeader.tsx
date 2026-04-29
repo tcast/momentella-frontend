@@ -7,6 +7,7 @@ import { AuthNav } from "@/components/auth/AuthNav";
 const nav = [
   { href: "/#approach", label: "Approach" },
   { href: "/#journeys", label: "Journeys" },
+  { href: "/services", label: "Itinerary planning" },
   { href: "/#process", label: "How we plan" },
 ] as const;
 

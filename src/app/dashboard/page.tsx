@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { serverFetchJson } from "@/lib/server-fetch";
+import { formatPrice, orderStatusBadge } from "@/lib/commerce-display";
 import {
   formatDateRange,
   summarizeDestinations,
@@ -26,6 +27,33 @@ type Trip = {
   updatedAt: string;
 };
 
+type ClientOrder = {
+  id: string;
+  totalCents: number;
+  status: string;
+  isGift: boolean;
+  createdAt: string;
+  product: { name: string; slug: string; itineraryDays: number | null };
+  giftCertificate: {
+    id: string;
+    code: string;
+    recipientEmail: string;
+    recipientName: string | null;
+    redeemedAt: string | null;
+  } | null;
+  trips: { id: string; title: string; status: string }[];
+};
+
+type GiftReceived = {
+  id: string;
+  redeemedAt: string | null;
+  order: {
+    product: { name: string; slug: string };
+    buyer: { name: string; email: string } | null;
+  };
+  redeemedTrip: { id: string; title: string; status: string } | null;
+};
+
 const ACTIVE_STATUSES = new Set([
   "LEAD",
   "PLANNING",
@@ -37,9 +65,11 @@ const ACTIVE_STATUSES = new Set([
 ]);
 
 export default async function DashboardPage() {
-  const tripsRes = await serverFetchJson<{ trips: Trip[] }>(
-    "/api/client/trips",
-  );
+  const [tripsRes, ordersRes, giftsRes] = await Promise.all([
+    serverFetchJson<{ trips: Trip[] }>("/api/client/trips"),
+    serverFetchJson<{ orders: ClientOrder[] }>("/api/client/orders"),
+    serverFetchJson<{ gifts: GiftReceived[] }>("/api/client/gifts-received"),
+  ]);
 
   if (!tripsRes) {
     return (
@@ -56,6 +86,9 @@ export default async function DashboardPage() {
   const trips = tripsRes.trips ?? [];
   const active = trips.filter((t) => ACTIVE_STATUSES.has(t.status));
   const past = trips.filter((t) => !ACTIVE_STATUSES.has(t.status));
+  const orders = ordersRes?.orders ?? [];
+  const giftsSent = orders.filter((o) => o.isGift);
+  const giftsReceived = giftsRes?.gifts ?? [];
 
   return (
     <div className="space-y-12">
@@ -69,12 +102,20 @@ export default async function DashboardPage() {
               Active and upcoming journeys with Momentella.
             </p>
           </div>
-          <Link
-            href="/connect"
-            className="rounded-full bg-ink px-4 py-2 text-xs font-semibold text-canvas hover:bg-accent-deep"
-          >
-            Plan a new trip
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/services"
+              className="rounded-full bg-ink px-4 py-2 text-xs font-semibold text-canvas hover:bg-accent-deep"
+            >
+              Order itinerary planning
+            </Link>
+            <Link
+              href="/connect"
+              className="rounded-full border border-line bg-white px-4 py-2 text-xs font-semibold text-ink hover:bg-canvas"
+            >
+              Plan a custom trip
+            </Link>
+          </div>
         </div>
         {active.length === 0 ? (
           <p className="mt-4 rounded-2xl border border-dashed border-line bg-canvas/40 px-6 py-8 text-center text-sm text-ink-muted">
@@ -90,6 +131,38 @@ export default async function DashboardPage() {
         )}
       </section>
 
+      {giftsReceived.length > 0 ? (
+        <section>
+          <h2 className="font-display text-xl font-semibold text-ink">
+            Gifts you've received
+          </h2>
+          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+            {giftsReceived.map((g) => (
+              <li
+                key={g.id}
+                className="rounded-2xl border border-line bg-white/70 p-5 shadow-sm"
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
+                  Gift from{" "}
+                  {g.order.buyer?.name ?? g.order.buyer?.email ?? "a friend"}
+                </p>
+                <p className="mt-1 font-display text-lg font-semibold text-ink">
+                  {g.order.product.name}
+                </p>
+                {g.redeemedTrip ? (
+                  <Link
+                    href={`/dashboard/trips/${g.redeemedTrip.id}`}
+                    className="mt-3 inline-flex text-xs font-semibold text-accent hover:underline"
+                  >
+                    Open the trip →
+                  </Link>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       {past.length > 0 ? (
         <section>
           <h2 className="font-display text-xl font-semibold text-ink">
@@ -100,6 +173,62 @@ export default async function DashboardPage() {
               <TripCard key={t.id} trip={t} />
             ))}
           </ul>
+        </section>
+      ) : null}
+
+      {orders.length > 0 ? (
+        <section>
+          <h2 className="font-display text-xl font-semibold text-ink">
+            Your orders
+          </h2>
+          <ul className="mt-4 space-y-2">
+            {orders.map((o) => {
+              const sb = orderStatusBadge(o.status);
+              return (
+                <li
+                  key={o.id}
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white/70 p-4 shadow-sm"
+                >
+                  <div>
+                    <p className="font-semibold text-ink">
+                      {o.product.name}
+                      <span className={`ml-2 ${sb.className}`}>{sb.label}</span>
+                      {o.isGift ? (
+                        <span className="ml-2 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-900">
+                          Gift
+                        </span>
+                      ) : null}
+                    </p>
+                    <p className="text-xs text-ink-muted">
+                      {new Date(o.createdAt).toLocaleDateString()} ·{" "}
+                      {formatPrice(o.totalCents)}
+                      {o.isGift && o.giftCertificate
+                        ? ` · for ${o.giftCertificate.recipientName ?? o.giftCertificate.recipientEmail}${
+                            o.giftCertificate.redeemedAt ? " (redeemed)" : ""
+                          }`
+                        : ""}
+                    </p>
+                  </div>
+                  {o.trips[0] ? (
+                    <Link
+                      href={`/dashboard/trips/${o.trips[0].id}`}
+                      className="rounded-full border border-line bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-canvas"
+                    >
+                      Open trip
+                    </Link>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+          {giftsSent.length > 0 ? (
+            <p className="mt-2 text-[11px] text-ink-muted">
+              You've sent {giftsSent.length} gift
+              {giftsSent.length === 1 ? "" : "s"} —{" "}
+              {giftsSent.filter((g) => g.giftCertificate?.redeemedAt).length}{" "}
+              redeemed.
+            </p>
+          ) : null}
         </section>
       ) : null}
     </div>
