@@ -11,6 +11,13 @@ export interface CertRow {
   recipientName: string | null;
   message: string | null;
   sentAt: string | null;
+  resendEmailId: string | null;
+  deliveredAt: string | null;
+  firstOpenedAt: string | null;
+  lastOpenedAt: string | null;
+  openCount: number;
+  bouncedAt: string | null;
+  bounceReason: string | null;
   redeemedAt: string | null;
   createdAt: string;
   order: {
@@ -191,11 +198,35 @@ export function GiftCertRow({ cert }: { cert: CertRow }) {
               <p className="text-xs text-ink-muted">{cert.recipientEmail}</p>
             </>
           )}
-          <p className="mt-1 text-[10px] text-ink-muted">
-            {cert.sentAt
-              ? `Email sent ${fmtDateTime(cert.sentAt)}`
-              : "Email not sent yet"}
-          </p>
+          <ul className="mt-2 space-y-0.5 text-[10px] text-ink-muted">
+            <li>
+              <Dot tone={cert.sentAt ? "ok" : "wait"} />{" "}
+              {cert.sentAt
+                ? `Sent ${fmtDateTime(cert.sentAt)}`
+                : "Not sent yet"}
+            </li>
+            <li>
+              <Dot tone={cert.deliveredAt ? "ok" : "wait"} />{" "}
+              {cert.deliveredAt
+                ? `Delivered ${fmtDateTime(cert.deliveredAt)}`
+                : "Not delivered yet"}
+            </li>
+            <li>
+              <Dot tone={cert.firstOpenedAt ? "ok" : "wait"} />{" "}
+              {cert.firstOpenedAt
+                ? `Opened ${fmtDateTime(cert.firstOpenedAt)}${cert.openCount > 1 ? ` · ${cert.openCount} opens` : ""}`
+                : "Not opened yet"}
+            </li>
+            {cert.bouncedAt ? (
+              <li>
+                <Dot tone="bad" />{" "}
+                <span className="text-red-900">
+                  Bounced {fmtDateTime(cert.bouncedAt)}
+                  {cert.bounceReason ? ` — ${cert.bounceReason}` : ""}
+                </span>
+              </li>
+            ) : null}
+          </ul>
         </Cell>
         <Cell label="Redemption">
           {cert.redeemedAt ? (
@@ -283,5 +314,20 @@ function Cell({
       </p>
       <div className="mt-1.5 text-sm">{children}</div>
     </div>
+  );
+}
+
+function Dot({ tone }: { tone: "ok" | "wait" | "bad" }) {
+  const color =
+    tone === "ok"
+      ? "bg-emerald-500"
+      : tone === "bad"
+        ? "bg-red-500"
+        : "bg-stone-300";
+  return (
+    <span
+      aria-hidden
+      className={`mr-1 inline-block h-1.5 w-1.5 rounded-full align-middle ${color}`}
+    />
   );
 }
