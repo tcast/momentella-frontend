@@ -1,8 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { getPublicAppUrl } from "@/lib/env-public";
+
+interface RedeemResponse {
+  tripId: string;
+  signInState: "already_signed_in" | "magic_link_sent";
+  redeemerEmail: string;
+}
 
 export function RedeemClient({
   code,
@@ -20,6 +27,7 @@ export function RedeemClient({
   const [name, setName] = useState(defaultName ?? "");
   const [err, setErr] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [done, setDone] = useState<RedeemResponse | null>(null);
 
   function submit() {
     setErr(null);
@@ -49,14 +57,53 @@ export function RedeemClient({
         );
         return;
       }
-      const j = (await res.json()) as { tripId: string };
-      // We've created the account; bounce them to login (they'll get a
-      // magic-link email shortly to set a password). For now, drop them on
-      // the login page with the email prefilled.
-      router.push(
-        `/login?email=${encodeURIComponent(email.trim().toLowerCase())}&trip=${encodeURIComponent(j.tripId)}`,
-      );
+      const j = (await res.json()) as RedeemResponse;
+      if (j.signInState === "already_signed_in") {
+        // Already authenticated → straight to their new trip.
+        router.push(`/dashboard/trips/${j.tripId}`);
+        return;
+      }
+      setDone(j);
     });
+  }
+
+  if (done) {
+    return (
+      <div className="mt-10 rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-6 shadow-sm">
+        <p className="font-display text-xl font-semibold text-emerald-950">
+          Your {productName} is ready ✓
+        </p>
+        <p className="mt-2 text-sm text-emerald-900">
+          We just emailed{" "}
+          <span className="font-semibold">{done.redeemerEmail}</span> a
+          one-tap sign-in link. Open it from your inbox and you'll land on
+          your trip.
+        </p>
+        <p className="mt-2 text-xs text-emerald-900/80">
+          Don't see it in 30 seconds? Check spam, or come back here and click
+          Resend below.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <Link
+            href={`/login?email=${encodeURIComponent(done.redeemerEmail)}`}
+            className="rounded-full bg-ink px-5 py-2 text-sm font-semibold text-canvas hover:bg-accent-deep"
+          >
+            Sign in with password instead
+          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              setDone(null);
+              submit();
+            }}
+            disabled={pending}
+            className="rounded-full border border-line bg-white px-5 py-2 text-sm font-semibold text-ink hover:bg-canvas disabled:opacity-60"
+          >
+            Resend the sign-in link
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -65,8 +112,8 @@ export function RedeemClient({
         Claim your {productName}
       </h2>
       <p className="mt-1 text-sm text-ink-muted">
-        We'll set up an account and email you a sign-in link. You'll see your
-        new trip on your dashboard right away.
+        We'll set up an account and email you a one-tap sign-in link.
+        You'll see your new trip on your portal right away.
       </p>
       <div className="mt-5 space-y-3">
         <Field label="Your name (optional)">
